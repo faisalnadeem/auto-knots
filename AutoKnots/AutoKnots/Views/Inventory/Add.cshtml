@@ -1,0 +1,162 @@
+@model AutoKnots.Models.InventoryItem
+@{
+    ViewData["Title"] = "Add Inventory";
+}
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Add Inventory</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Inventory</a></li>
+            <li class="breadcrumb-item">Add</li>
+        </ul>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title">Add Vehicle</h5>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    <form method="post" asp-action="Add" novalidate>
+                        @Html.AntiForgeryToken()
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Name" class="fw-semibold">Name: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-package"></i></div>
+                                    <input asp-for="Name" class="form-control" placeholder="Name" />
+                                </div>
+                                <span asp-validation-for="Name" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Make" class="fw-semibold">Make: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-truck"></i></div>
+                                    <input asp-for="Make" class="form-control" placeholder="e.g. Toyota, Honda" />
+                                </div>
+                                <span asp-validation-for="Make" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Model" class="fw-semibold">Model: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-box"></i></div>
+                                    <input asp-for="Model" class="form-control" placeholder="e.g. Corolla, Civic" />
+                                </div>
+                                <span asp-validation-for="Model" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Variant" class="fw-semibold">Variant: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-sliders"></i></div>
+                                    <input asp-for="Variant" class="form-control" placeholder="Optional variant/trim" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="EngineNumber" class="fw-semibold">Engine Number: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-cpu"></i></div>
+                                    <input asp-for="EngineNumber" class="form-control" placeholder="Engine number" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="ChassisNumber" class="fw-semibold">Chassis Number: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-hash"></i></div>
+                                    <input asp-for="ChassisNumber" class="form-control" placeholder="Chassis number" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="PurchaseDate" class="fw-semibold">Purchase Date: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-calendar"></i></div>
+                                    <input asp-for="PurchaseDate" class="form-control" type="date" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="CostPrice" class="fw-semibold">Cost Price: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-dollar-sign"></i></div>
+                                    <input asp-for="CostPrice" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="CostPrice" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="SalePrice" class="fw-semibold">Sale Price: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-tag"></i></div>
+                                    <input asp-for="SalePrice" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="SalePrice" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="IsActive" class="fw-semibold">Active: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                    <label asp-for="IsActive" class="form-check-label">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-4" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="feather-save me-2"></i> Save
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+@section Scripts {
+    @* Client-side validation disabled so form always POSTs; server validates. *@
+}
