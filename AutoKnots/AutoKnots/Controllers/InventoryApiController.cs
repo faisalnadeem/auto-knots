@@ -22,7 +22,7 @@ public class InventoryApiController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<InventoryListResult>> GetList([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        var result = await _inventoryService.GetListAsync(search, page, pageSize, cancellationToken);
+        var result = await _inventoryService.GetListAsync(search, page, pageSize, null, cancellationToken);
         return Ok(result);
     }
 

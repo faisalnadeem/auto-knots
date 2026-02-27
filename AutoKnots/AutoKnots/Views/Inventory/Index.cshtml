@@ -86,13 +86,20 @@
                                             <td>@item.SalePrice.ToString("N2")</td>
                                             <td>@(item.PurchaseDate?.ToString("dd MMM yyyy") ?? "—")</td>
                                             <td>
-                                                @if (item.IsActive)
+                                                @switch (item.Status)
                                                 {
-                                                    <span class="badge bg-soft-success text-success">Active</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-soft-secondary text-secondary">Inactive</span>
+                                                    case AutoKnots.Models.InventoryStatus.Active:
+                                                        <span class="badge bg-soft-success text-success">Active</span>
+                                                        break;
+                                                    case AutoKnots.Models.InventoryStatus.PendingApproval:
+                                                        <span class="badge bg-soft-warning text-warning">Pending Approval</span>
+                                                        break;
+                                                    case AutoKnots.Models.InventoryStatus.Failed:
+                                                        <span class="badge bg-soft-danger text-danger">Failed</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-soft-secondary text-secondary">Draft</span>
+                                                        break;
                                                 }
                                             </td>
                                             <td class="text-end">

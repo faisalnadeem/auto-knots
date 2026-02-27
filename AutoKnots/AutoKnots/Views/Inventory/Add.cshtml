@@ -1,6 +1,8 @@
 @model AutoKnots.Models.InventoryItem
+@using Microsoft.AspNetCore.Identity
 @{
     ViewData["Title"] = "Add Inventory";
+    var investors = ViewBag.Investors as IEnumerable<IdentityUser> ?? Enumerable.Empty<IdentityUser>();
 }
 <!-- [ page-header ] start -->
 <div class="page-header">
@@ -19,7 +21,7 @@
 <!-- [ Main Content ] start -->
 <div class="main-content">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-xl-12">
             <div class="card stretch stretch-full">
                 <div class="card-header">
                     <h5 class="card-title">Add Vehicle</h5>
@@ -144,6 +146,60 @@
                             </div>
                         </div>
                         <hr class="my-4" />
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h6 class="fw-semibold mb-2">Investor Allocations</h6>
+                                <p class="text-muted fs-12 mb-3">
+                                    Select one or more investors for this vehicle and specify either an investment amount, a percentage, or both.
+                                    The vehicle will be marked as <strong>Pending Approval</strong> until all selected investors approve.
+                                </p>
+                                @if (investors.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Select</th>
+                                                    <th>Investor</th>
+                                                    <th>Email</th>
+                                                    <th style="width: 160px;">Amount</th>
+                                                    <th style="width: 160px;">Percentage %</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var inv in investors)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="investorIds" value="@inv.Id" id="inv_@inv.Id" />
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <label class="mb-0" for="inv_@inv.Id">@inv.UserName</label>
+                                                        </td>
+                                                        <td>@inv.Email</td>
+                                                        <td>
+                                                            <input name="amount_@inv.Id" type="number" step="0.01" min="0" class="form-control form-control-sm" placeholder="0.00" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="percentage_@inv.Id" type="number" step="0.01" min="0" max="100" class="form-control form-control-sm" placeholder="%" />
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info mb-0">
+                                        No other users are available as investors yet. You can still save this vehicle without investors.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <hr class="my-4" />
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="feather-save me-2"></i> Save
@@ -158,5 +214,46 @@
 </div>
 <!-- [ Main Content ] end -->
 @section Scripts {
-    @* Client-side validation disabled so form always POSTs; server validates. *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const costInput = document.getElementById('CostPrice');
+
+            function getCost() {
+                if (!costInput) return 0;
+                const raw = costInput.value.replace(',', '.');
+                const val = parseFloat(raw);
+                return isNaN(val) ? 0 : val;
+            }
+
+            document.querySelectorAll('input[name^="amount_"]').forEach(function (amountInput) {
+                amountInput.addEventListener('change', function () {
+                    const cost = getCost();
+                    if (!cost) return;
+                    const rawAmount = this.value.replace(',', '.');
+                    const amount = parseFloat(rawAmount);
+                    if (!amount || amount <= 0) return;
+                    const investorId = this.name.substring('amount_'.length);
+                    const percentageInput = document.querySelector('input[name="percentage_' + investorId + '"]');
+                    if (!percentageInput) return;
+                    const perc = (amount / cost) * 100;
+                    percentageInput.value = perc.toFixed(2);
+                });
+            });
+
+            document.querySelectorAll('input[name^="percentage_"]').forEach(function (percentageInput) {
+                percentageInput.addEventListener('change', function () {
+                    const cost = getCost();
+                    if (!cost) return;
+                    const rawPerc = this.value.replace(',', '.');
+                    const perc = parseFloat(rawPerc);
+                    if (!perc || perc <= 0) return;
+                    const investorId = this.name.substring('percentage_'.length);
+                    const amountInput = document.querySelector('input[name="amount_' + investorId + '"]');
+                    if (!amountInput) return;
+                    const amount = cost * (perc / 100);
+                    amountInput.value = amount.toFixed(2);
+                });
+            });
+        });
+    </script>
 }

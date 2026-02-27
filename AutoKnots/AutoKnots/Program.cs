@@ -22,6 +22,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IInventoryApprovalService, InventoryApprovalService>();
 
 var app = builder.Build();
 

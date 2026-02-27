@@ -12,15 +12,29 @@ namespace AutoKnots.Data
         }
 
         public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<InventoryInvestment> InventoryInvestments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<InventoryItem>(e =>
             {
                 e.Property(x => x.CostPrice).HasPrecision(18, 2);
                 e.Property(x => x.SalePrice).HasPrecision(18, 2);
             });
+
+            modelBuilder.Entity<InventoryInvestment>(e =>
+            {
+                e.Property(x => x.Amount).HasPrecision(18, 2);
+                e.Property(x => x.Percentage).HasPrecision(5, 2);
+
+                e.HasOne(x => x.InventoryItem)
+                    .WithMany(i => i.Investments)
+                    .HasForeignKey(x => x.InventoryItemId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }
+

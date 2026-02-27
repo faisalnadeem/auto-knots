@@ -4,55 +4,75 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AutoKnots.Services;
 
-public class InventoryService : IInventoryService
-{
-    private readonly ApplicationDbContext _db;
-
-    public InventoryService(ApplicationDbContext db)
+    public class InventoryService : IInventoryService
     {
-        _db = db;
-    }
+        private readonly ApplicationDbContext _db;
 
-    public async Task<InventoryItem?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await _db.InventoryItems.FindAsync(new object[] { id }, cancellationToken);
-    }
-
-    public async Task<InventoryListResult> GetListAsync(string? search, int page, int pageSize, CancellationToken cancellationToken = default)
-    {
-        page = Math.Max(1, page);
-        pageSize = Math.Clamp(pageSize, 1, 100);
-
-        var query = _db.InventoryItems.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(search))
+        public InventoryService(ApplicationDbContext db)
         {
-            var term = search.Trim();
-            query = query.Where(x =>
-                (x.Name != null && x.Name.Contains(term)) ||
-                (x.Make != null && x.Make.Contains(term)) ||
-                (x.Model != null && x.Model.Contains(term)) ||
-                (x.Variant != null && x.Variant.Contains(term)));
+            _db = db;
         }
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderBy(x => x.Name)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
 
-        return new InventoryListResult
+        public async Task<InventoryItem?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            Items = items,
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize
-        };
-    }
+            return await _db.InventoryItems
+                .Include(x => x.Investments)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<InventoryListResult> GetListAsync(string? search, int page, int pageSize, string? currentUserId = null, CancellationToken cancellationToken = default)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _db.InventoryItems.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(currentUserId))
+            {
+                query = query.Where(x =>
+                    x.CreatedByUserId == currentUserId ||
+                    x.Investments.Any(inv => inv.InvestorUserId == currentUserId));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                query = query.Where(x =>
+                    (x.Name != null && x.Name.Contains(term)) ||
+                    (x.Make != null && x.Make.Contains(term)) ||
+                    (x.Model != null && x.Model.Contains(term)) ||
+                    (x.Variant != null && x.Variant.Contains(term)));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+            var items = await query
+                .OrderBy(x => x.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
+            return new InventoryListResult
+            {
+                Items = items,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
 
     public async Task<InventoryServiceResult> CreateAsync(InventoryItem item, CancellationToken cancellationToken = default)
     {
         item.Id = 0;
         item.CreatedAt = DateTime.UtcNow;
+            // New items start in Draft unless the caller explicitly sets a status.
+            if (item.Status == default)
+            {
+                item.Status = InventoryStatus.Draft;
+            }
+
+            // Ensure IsActive reflects the workflow status.
+            item.IsActive = item.Status == InventoryStatus.Active;
+
         _db.InventoryItems.Add(item);
         await _db.SaveChangesAsync(cancellationToken);
         return new InventoryServiceResult { Success = true, Item = item };
@@ -74,7 +94,8 @@ public class InventoryService : IInventoryService
         existing.CostPrice = item.CostPrice;
         existing.SalePrice = item.SalePrice;
         existing.MinimumStock = item.MinimumStock;
-        existing.IsActive = item.IsActive;
+            existing.Status = item.Status;
+            existing.IsActive = existing.Status == InventoryStatus.Active;
         await _db.SaveChangesAsync(cancellationToken);
         return new InventoryServiceResult { Success = true, Item = existing };
     }
