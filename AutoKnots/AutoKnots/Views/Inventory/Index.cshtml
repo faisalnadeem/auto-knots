@@ -62,7 +62,6 @@
                                     <th>Engine No.</th>
                                     <th>Chassis No.</th>
                                     <th>Cost Price</th>
-                                    <th>Sale Price</th>
                                     <th>Purchased</th>
                                     <th>Status</th>
                                     <th class="text-end">Actions</th>
@@ -83,7 +82,6 @@
                                             <td>@(string.IsNullOrWhiteSpace(item.EngineNumber) ? "—" : item.EngineNumber)</td>
                                             <td>@(string.IsNullOrWhiteSpace(item.ChassisNumber) ? "—" : item.ChassisNumber)</td>
                                             <td>@item.CostPrice.ToString("N2")</td>
-                                            <td>@item.SalePrice.ToString("N2")</td>
                                             <td>@(item.PurchaseDate?.ToString("dd MMM yyyy") ?? "—")</td>
                                             <td>
                                                 @switch (item.Status)
@@ -115,7 +113,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted py-4">No vehicles found. <a asp-action="Add">Add one</a>.</td>
+                                        <td colspan="8" class="text-center text-muted py-4">No vehicles found. <a asp-action="Add">Add one</a>.</td>
                                     </tr>
                                 }
                             </tbody>

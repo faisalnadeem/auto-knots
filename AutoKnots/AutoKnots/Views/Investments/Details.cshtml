@@ -39,13 +39,14 @@
                         </dd>
 
                         <dt class="col-sm-3">Purchase Date</dt>
-                        <dd class="col-sm-9">@Model.Item.PurchaseDate?.ToString("dd MMM yyyy") ?? "—"</dd>
+                        <dd class="col-sm-9">
+                            @(Model.Item.PurchaseDate.HasValue
+                                ? Model.Item.PurchaseDate.Value.ToString("dd MMM yyyy")
+                                : "—")
+                        </dd>
 
                         <dt class="col-sm-3">Cost Price</dt>
                         <dd class="col-sm-9">@Model.Item.CostPrice.ToString("N2")</dd>
-
-                        <dt class="col-sm-3">Sale Price</dt>
-                        <dd class="col-sm-9">@Model.Item.SalePrice.ToString("N2")</dd>
 
                         <dt class="col-sm-3">Created By</dt>
                         <dd class="col-sm-9">@Model.CreatorEmail</dd>
