@@ -41,7 +41,7 @@
                                 {
                                     foreach (var inv in Model.PendingInvestments)
                                     {
-                                        <tr>
+                                        <tr class="clickable-row" data-href="@Url.Action("Details", new { id = inv.Id })">
                                             <td>
                                                 <a asp-action="Details" asp-route-id="@inv.Id">@inv.InventoryItem?.Name</a>
                                             </td>
@@ -98,7 +98,7 @@
                                 {
                                     foreach (var inv in Model.ApprovedInvestments)
                                     {
-                                        <tr>
+                                        <tr class="clickable-row" data-href="@Url.Action("Details", new { id = inv.Id })">
                                             <td>
                                                 <a asp-action="Details" asp-route-id="@inv.Id">@inv.InventoryItem?.Name</a>
                                             </td>
