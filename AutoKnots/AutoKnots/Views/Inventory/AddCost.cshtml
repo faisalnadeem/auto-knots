@@ -1,0 +1,76 @@
+@model AutoKnots.Models.InventoryCostFormViewModel
+@{
+    ViewData["Title"] = "Add Cost";
+    var investors = ViewBag.Investors as IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser> ?? Enumerable.Empty<Microsoft.AspNetCore.Identity.IdentityUser>();
+}
+
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Add Cost - @Model.InventoryName</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Inventory</a></li>
+            <li class="breadcrumb-item"><a asp-action="Edit" asp-route-id="@Model.InventoryItemId">Edit</a></li>
+            <li class="breadcrumb-item">Add Cost</li>
+        </ul>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Add Cost</h5>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    <form asp-action="AddCost" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="InventoryItemId" />
+
+                        <div class="mb-3">
+                            <label asp-for="InvestorUserId" class="form-label fw-semibold">Investor</label>
+                            <select asp-for="InvestorUserId" class="form-select">
+                                <option value="">Select investor</option>
+                                @foreach (var investor in investors)
+                                {
+                                    <option value="@investor.Id">@investor.UserName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="InvestorUserId" class="text-danger fs-12"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Amount" class="form-label fw-semibold">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="feather-dollar-sign"></i></span>
+                                <input asp-for="Amount" class="form-control" type="number" step="0.01" min="0.01" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger fs-12"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label fw-semibold">Type</label>
+                            <input asp-for="Type" class="form-control" placeholder="e.g. Repair, Registration, Maintenance" />
+                            <span asp-validation-for="Type" class="text-danger fs-12"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label fw-semibold">Notes (optional)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.InventoryItemId" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Cost</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

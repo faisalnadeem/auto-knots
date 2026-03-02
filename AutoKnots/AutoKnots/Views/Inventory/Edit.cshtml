@@ -21,8 +21,21 @@
     <div class="row">
         <div class="col-xl-12">
             <div class="card stretch stretch-full">
-                <div class="card-header">
-                    <h5 class="card-title">Edit Vehicle</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Edit Vehicle</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-light-brand dropdown-toggle" type="button" id="costingDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            Costing
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="costingDropdown">
+                            <li>
+                                <a class="dropdown-item" asp-action="AddCost" asp-route-id="@Model.Id">Add Cost</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-action="EditCosts" asp-route-id="@Model.Id">Edit Cost</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div asp-validation-summary="All" class="text-danger mb-3"></div>
@@ -239,4 +252,26 @@
 <!-- [ Main Content ] end -->
 @section Scripts {
     @* Client-side validation disabled so form always POSTs; server validates. *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggle = document.getElementById('costingDropdown');
+            if (!toggle || typeof bootstrap === 'undefined') {
+                return;
+            }
+
+            var dropdown = bootstrap.Dropdown.getOrCreateInstance(toggle);
+            var wrapper = toggle.closest('.dropdown');
+            if (!wrapper) {
+                return;
+            }
+
+            wrapper.addEventListener('mouseenter', function () {
+                dropdown.show();
+            });
+
+            wrapper.addEventListener('mouseleave', function () {
+                dropdown.hide();
+            });
+        });
+    </script>
 }

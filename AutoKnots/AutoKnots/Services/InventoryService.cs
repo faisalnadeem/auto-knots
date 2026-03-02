@@ -64,14 +64,15 @@ namespace AutoKnots.Services;
     {
         item.Id = 0;
         item.CreatedAt = DateTime.UtcNow;
-            // New items start in Draft unless the caller explicitly sets a status.
-            if (item.Status == default)
-            {
-                item.Status = InventoryStatus.Draft;
-            }
 
-            // Ensure IsActive reflects the workflow status.
-            item.IsActive = item.Status == InventoryStatus.Active;
+        // New items start in Draft unless the caller explicitly sets a status.
+        if (item.Status == default)
+        {
+            item.Status = InventoryStatus.Draft;
+        }
+
+        // Ensure IsActive reflects the workflow status.
+        item.IsActive = item.Status == InventoryStatus.Active;
 
         _db.InventoryItems.Add(item);
         await _db.SaveChangesAsync(cancellationToken);
@@ -94,8 +95,12 @@ namespace AutoKnots.Services;
         existing.CostPrice = item.CostPrice;
         existing.SalePrice = item.SalePrice;
         existing.MinimumStock = item.MinimumStock;
-            existing.Status = item.Status;
-            existing.IsActive = existing.Status == InventoryStatus.Active;
+
+        // Only change status when caller explicitly sets it; otherwise keep existing.
+        var newStatus = item.Status == default ? existing.Status : item.Status;
+        existing.Status = newStatus;
+        existing.IsActive = newStatus == InventoryStatus.Active;
+
         await _db.SaveChangesAsync(cancellationToken);
         return new InventoryServiceResult { Success = true, Item = existing };
     }

@@ -16,6 +16,29 @@ public class InventoryController : Controller
     private readonly ApplicationDbContext _db;
     private readonly UserManager<IdentityUser> _userManager;
 
+    private static void RecalculateInvestmentPercentages(InventoryItem item)
+    {
+        if (item.Investments == null || !item.Investments.Any())
+        {
+            return;
+        }
+
+        var totalCost = item.CostPrice;
+        if (totalCost <= 0)
+        {
+            foreach (var inv in item.Investments)
+            {
+                inv.Percentage = null;
+            }
+            return;
+        }
+
+        foreach (var inv in item.Investments)
+        {
+            inv.Percentage = Math.Round((inv.Amount / totalCost) * 100m, 2);
+        }
+    }
+
     public InventoryController(IInventoryService inventoryService, ApplicationDbContext db, UserManager<IdentityUser> userManager)
     {
         _inventoryService = inventoryService;
@@ -58,12 +81,12 @@ public class InventoryController : Controller
 
         var item = new InventoryItem();
 
-        item.Name = form["Name"];
-        item.Make = form["Make"];
-        item.Model = form["Model"];
+        item.Name = form["Name"]!;
+        item.Make = form["Make"]!;
+        item.Model = form["Model"]!;
         item.Variant = form["Variant"];
-        item.EngineNumber = form["EngineNumber"];
-        item.ChassisNumber = form["ChassisNumber"];
+        item.EngineNumber = form["EngineNumber"]!;
+        item.ChassisNumber = form["ChassisNumber"]!;
 
         if (DateTime.TryParse(form["PurchaseDate"], out var purchaseDate))
         {
@@ -75,13 +98,8 @@ public class InventoryController : Controller
             item.CostPrice = cost;
         }
 
-        if (decimal.TryParse(form["SalePrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var sale))
-        {
-            item.SalePrice = sale;
-        }
+        // Sale price is not set at creation time; it can be configured later from Edit.
 
-        // Checkbox posts value only when checked; presence means true
-        item.IsActive = form.ContainsKey("IsActive");
         item.CreatedByUserId = _userManager.GetUserId(User);
 
         // If investors are selected, start the workflow in PendingApproval and keep inactive.
@@ -89,6 +107,12 @@ public class InventoryController : Controller
         {
             item.Status = InventoryStatus.PendingApproval;
             item.IsActive = false;
+        }
+        else
+        {
+            // No investors: vehicle is immediately active.
+            item.Status = InventoryStatus.Active;
+            item.IsActive = true;
         }
 
         var result = await _inventoryService.CreateAsync(item, cancellationToken);
@@ -141,7 +165,7 @@ public class InventoryController : Controller
                 investments.Add(new InventoryInvestment
                 {
                     InventoryItemId = result.Item.Id,
-                    InvestorUserId = investorId,
+                    InvestorUserId = investorId!,
                     Amount = amount,
                     Percentage = percentage,
                     Status = InvestmentStatus.Pending,
@@ -167,8 +191,12 @@ public class InventoryController : Controller
             return NotFound();
 
         var creatorId = item.CreatedByUserId ?? _userManager.GetUserId(User);
-        var investors = _userManager.Users
-            .Where(u => u.Id != creatorId)
+        var investorsQuery = _userManager.Users.AsQueryable();
+        if (!string.IsNullOrEmpty(creatorId))
+        {
+            investorsQuery = investorsQuery.Where(u => u.Id != creatorId);
+        }
+        var investors = investorsQuery
             .OrderBy(u => u.Email)
             .ToList();
 
@@ -178,7 +206,7 @@ public class InventoryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(InventoryItem model, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Edit(InventoryItem inventoryItem, CancellationToken cancellationToken = default)
     {
         var form = Request.Form;
         var investorIds = form["investorIds"];
@@ -186,38 +214,43 @@ public class InventoryController : Controller
         // Ensure we have the correct Id
         if (int.TryParse(form["Id"], out var id))
         {
-            model.Id = id;
+            inventoryItem.Id = id;
         }
 
-        model.Name = form["Name"];
-        model.Make = form["Make"];
-        model.Model = form["Model"];
-        model.Variant = form["Variant"];
-        model.EngineNumber = form["EngineNumber"];
-        model.ChassisNumber = form["ChassisNumber"];
+        inventoryItem.Name = form["Name"]!;
+        inventoryItem.Make = form["Make"]!;
+        inventoryItem.Model = form["Model"]!;
+        inventoryItem.Variant = form["Variant"];
+        inventoryItem.EngineNumber = form["EngineNumber"]!;
+        inventoryItem.ChassisNumber = form["ChassisNumber"]!;
 
         if (DateTime.TryParse(form["PurchaseDate"], out var purchaseDate))
         {
-            model.PurchaseDate = purchaseDate;
+            inventoryItem.PurchaseDate = purchaseDate;
         }
 
         if (decimal.TryParse(form["CostPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var cost))
         {
-            model.CostPrice = cost;
+            inventoryItem.CostPrice = cost;
         }
 
         if (decimal.TryParse(form["SalePrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var sale))
         {
-            model.SalePrice = sale;
+            inventoryItem.SalePrice = sale;
         }
 
-        model.IsActive = form.ContainsKey("IsActive");
+        // If any investors are selected, move the item into PendingApproval
+        // so it waits for their decision; otherwise keep existing status.
+        if (investorIds.Count > 0)
+        {
+            inventoryItem.Status = InventoryStatus.PendingApproval;
+        }
 
-        var result = await _inventoryService.UpdateAsync(model, cancellationToken);
+        var result = await _inventoryService.UpdateAsync(inventoryItem, cancellationToken);
         if (!result.Success)
         {
             ModelState.AddModelError("", result.Error ?? "Failed to update.");
-            return View(model);
+            return View(inventoryItem);
         }
 
         // Update investor allocations if any were provided.
@@ -272,7 +305,7 @@ public class InventoryController : Controller
                     _db.InventoryInvestments.Add(new InventoryInvestment
                     {
                         InventoryItemId = result.Item.Id,
-                        InvestorUserId = investorId,
+                        InvestorUserId = investorId!,
                         Amount = amount,
                         Percentage = percentage,
                         Status = InvestmentStatus.Pending,
@@ -285,6 +318,283 @@ public class InventoryController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AddCost(int id, CancellationToken cancellationToken = default)
+    {
+        var item = await _db.InventoryItems
+            .Include(i => i.Investments)
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        var investorIds = item.Investments
+            .Select(x => x.InvestorUserId)
+            .Where(id => id != null)
+            .Select(id => id!)
+            .ToList();
+
+        var creatorId = item.CreatedByUserId;
+        if (!string.IsNullOrEmpty(creatorId) && !investorIds.Contains(creatorId))
+        {
+            investorIds.Add(creatorId);
+        }
+
+        var investors = _userManager.Users
+            .Where(u => investorIds.Contains(u.Id))
+            .OrderBy(u => u.Email)
+            .ToList();
+
+        ViewBag.Investors = investors;
+
+        var vm = new InventoryCostFormViewModel
+        {
+            InventoryItemId = item.Id,
+            InventoryName = item.Name
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddCost(InventoryCostFormViewModel model, CancellationToken cancellationToken = default)
+    {
+        if (!ModelState.IsValid)
+        {
+            var itemForView = await _db.InventoryItems
+                .Include(i => i.Investments)
+                .FirstOrDefaultAsync(i => i.Id == model.InventoryItemId, cancellationToken);
+
+            var investorIdsView = itemForView?.Investments
+                .Select(x => x.InvestorUserId)
+                .Where(id => id != null)
+                .Select(id => id!)
+                .ToList() ?? new List<string>();
+
+            var creatorIdView = itemForView?.CreatedByUserId;
+            if (!string.IsNullOrEmpty(creatorIdView) && !investorIdsView.Contains(creatorIdView))
+            {
+                investorIdsView.Add(creatorIdView);
+            }
+
+            var investorsView = _userManager.Users
+                .Where(u => investorIdsView.Contains(u.Id))
+                .OrderBy(u => u.Email)
+                .ToList();
+            ViewBag.Investors = investorsView;
+            return View(model);
+        }
+
+        var item = await _db.InventoryItems
+            .Include(i => i.Investments)
+            .FirstOrDefaultAsync(i => i.Id == model.InventoryItemId, cancellationToken);
+
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        var investment = item.Investments.FirstOrDefault(x => x.InvestorUserId == model.InvestorUserId);
+        if (investment == null)
+        {
+            ModelState.AddModelError("", "Selected investor is not associated with this vehicle.");
+
+            var investorIds = item.Investments.Select(x => x.InvestorUserId).Distinct().ToList();
+            var investors = _userManager.Users
+                .Where(u => investorIds.Contains(u.Id))
+                .OrderBy(u => u.Email)
+                .ToList();
+
+            ViewBag.Investors = investors;
+            return View(model);
+        }
+
+        var cost = new InventoryCost
+        {
+            InventoryItemId = item.Id,
+            InvestorUserId = model.InvestorUserId,
+            Amount = model.Amount,
+            Type = model.Type,
+            Notes = model.Notes,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.InventoryCosts.Add(cost);
+
+        // Update totals and investor share.
+        item.CostPrice += model.Amount;
+        investment.Amount += model.Amount;
+
+        RecalculateInvestmentPercentages(item);
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        TempData["SuccessMessage"] = "Cost added successfully and investor allocation updated.";
+        return RedirectToAction(nameof(Edit), new { id = item.Id });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditCosts(int id, CancellationToken cancellationToken = default)
+    {
+        var item = await _db.InventoryItems
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        var costs = await _db.InventoryCosts
+            .Where(c => c.InventoryItemId == id)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var investorIds = costs
+            .Select(c => c.InvestorUserId)
+            .Where(id => id != null)
+            .Select(id => id!)
+            .Distinct()
+            .ToList();
+
+        var investors = _userManager.Users
+            .Where(u => investorIds.Contains(u.Id))
+            .ToDictionary(u => u.Id, u => u.UserName);
+
+        ViewBag.InventoryName = item.Name;
+        ViewBag.InvestorNames = investors;
+
+        return View(costs);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditCost(int id, CancellationToken cancellationToken = default)
+    {
+        var cost = await _db.InventoryCosts
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+
+        if (cost == null)
+        {
+            return NotFound();
+        }
+
+        var item = await _db.InventoryItems
+            .Include(i => i.Investments)
+            .FirstOrDefaultAsync(i => i.Id == cost.InventoryItemId, cancellationToken);
+
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        var investorIds = item.Investments
+            .Select(x => x.InvestorUserId)
+            .Where(id => id != null)
+            .Select(id => id!)
+            .Distinct()
+            .ToList();
+        var investors = _userManager.Users
+            .Where(u => investorIds.Contains(u.Id))
+            .OrderBy(u => u.Email)
+            .ToList();
+
+        ViewBag.Investors = investors;
+
+        var vm = new InventoryCostFormViewModel
+        {
+            Id = cost.Id,
+            InventoryItemId = cost.InventoryItemId,
+            InvestorUserId = cost.InvestorUserId ?? string.Empty,
+            Amount = cost.Amount,
+            Type = cost.Type,
+            Notes = cost.Notes,
+            InventoryName = item.Name
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditCost(InventoryCostFormViewModel model, CancellationToken cancellationToken = default)
+    {
+        if (!ModelState.IsValid)
+        {
+            var itemForView = await _db.InventoryItems
+                .Include(i => i.Investments)
+                .FirstOrDefaultAsync(i => i.Id == model.InventoryItemId, cancellationToken);
+
+            var investorIdsView = itemForView?.Investments
+                .Select(x => x.InvestorUserId)
+                .Where(id => id != null)
+                .Select(id => id!)
+                .Distinct()
+                .ToList() ?? new List<string>();
+
+            var investorsView = _userManager.Users
+                .Where(u => investorIdsView.Contains(u.Id))
+                .OrderBy(u => u.Email)
+                .ToList();
+            ViewBag.Investors = investorsView;
+            return View(model);
+        }
+
+        var cost = await _db.InventoryCosts
+            .FirstOrDefaultAsync(c => c.Id == model.Id, cancellationToken);
+
+        if (cost == null)
+        {
+            return NotFound();
+        }
+
+        var item = await _db.InventoryItems
+            .Include(i => i.Investments)
+            .FirstOrDefaultAsync(i => i.Id == cost.InventoryItemId, cancellationToken);
+
+        if (item == null)
+        {
+            return NotFound();
+        }
+
+        var previousAmount = cost.Amount;
+        var previousInvestorId = cost.InvestorUserId;
+
+        cost.InvestorUserId = model.InvestorUserId;
+        cost.Amount = model.Amount;
+        cost.Type = model.Type;
+        cost.Notes = model.Notes;
+        cost.UpdatedAt = DateTime.UtcNow;
+
+        // Adjust inventory cost price by the delta.
+        var delta = model.Amount - previousAmount;
+        item.CostPrice += delta;
+
+        // Update investor allocations.
+        if (previousInvestorId != null)
+        {
+            var oldInvestment = item.Investments.FirstOrDefault(x => x.InvestorUserId == previousInvestorId);
+            if (oldInvestment != null)
+            {
+                oldInvestment.Amount -= previousAmount;
+            }
+        }
+
+        var newInvestment = item.Investments.FirstOrDefault(x => x.InvestorUserId == model.InvestorUserId);
+        if (newInvestment != null)
+        {
+            newInvestment.Amount += model.Amount;
+        }
+
+        RecalculateInvestmentPercentages(item);
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        TempData["SuccessMessage"] = "Cost updated successfully and investor allocation adjusted.";
+        return RedirectToAction(nameof(EditCosts), new { id = item.Id });
     }
 
     [HttpPost]

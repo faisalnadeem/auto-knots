@@ -19,6 +19,18 @@
         .table tbody tr.clickable-row {
             cursor: pointer;
         }
+
+        /* Ensure delete modal stays sharp even if theme blurs background on .modal-open */
+        .modal-open .modal {
+            -webkit-filter: none !important;
+            filter: none !important;
+        }
+
+        /* Prevent global blur on main content when any modal is open */
+        .modal-open .nxl-container {
+            -webkit-filter: none !important;
+            filter: none !important;
+        }
     </style>
     <!--! END: Custom CSS-->
     <!--! HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries !-->
