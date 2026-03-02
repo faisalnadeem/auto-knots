@@ -24,6 +24,9 @@
             <div class="card stretch stretch-full">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Cost Entries</h5>
+                    <a asp-action="AddCost" asp-route-id="@((Model?.FirstOrDefault()?.InventoryItemId) ?? 0)" class="btn btn-light-brand">
+                        Add Cost
+                    </a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">

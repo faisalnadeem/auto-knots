@@ -122,53 +122,84 @@ public class InventoryController : Controller
             return View(item);
         }
 
-        // Create investment records for selected investors.
-        if (investorIds.Count > 0 && result.Item != null)
+        // Create initial investment and costing records.
+        if (result.Item != null)
         {
-            var investments = new List<InventoryInvestment>();
             var totalCost = result.Item.CostPrice;
+            var investments = new List<InventoryInvestment>();
+            var costs = new List<InventoryCost>();
+            decimal totalInvestorAmount = 0m;
 
-            foreach (var investorId in investorIds)
+            if (investorIds.Count > 0)
             {
-                decimal amount = 0;
-                decimal? percentage = null;
-
-                var amountKey = $"amount_{investorId}";
-                var percentageKey = $"percentage_{investorId}";
-
-                if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                foreach (var investorId in investorIds)
                 {
-                    amount = amt;
-                }
+                    decimal amount = 0;
+                    decimal? percentage = null;
 
-                if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
-                {
-                    percentage = perc;
-                }
+                    var amountKey = $"amount_{investorId}";
+                    var percentageKey = $"percentage_{investorId}";
 
-                // If user provided only amount, calculate percentage from cost price.
-                if (amount > 0 && (percentage == null || percentage <= 0) && totalCost > 0)
-                {
-                    percentage = Math.Round((amount / totalCost) * 100m, 2);
-                }
-                // If user provided only percentage, calculate amount from cost price.
-                else if ((amount <= 0 || totalCost <= 0) && percentage is > 0)
-                {
-                    amount = Math.Round(totalCost * (percentage.Value / 100m), 2);
-                }
-                // If both are zero / missing, skip.
-                if (amount <= 0 && (percentage == null || percentage <= 0))
-                {
-                    continue;
-                }
+                    if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                    {
+                        amount = amt;
+                    }
 
-                investments.Add(new InventoryInvestment
+                    if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
+                    {
+                        percentage = perc;
+                    }
+
+                    // If user provided only amount, calculate percentage from cost price.
+                    if (amount > 0 && (percentage == null || percentage <= 0) && totalCost > 0)
+                    {
+                        percentage = Math.Round((amount / totalCost) * 100m, 2);
+                    }
+                    // If user provided only percentage, calculate amount from cost price.
+                    else if ((amount <= 0 || totalCost <= 0) && percentage is > 0)
+                    {
+                        amount = Math.Round(totalCost * (percentage.Value / 100m), 2);
+                    }
+                    // If both are zero / missing, skip.
+                    if (amount <= 0 && (percentage == null || percentage <= 0))
+                    {
+                        continue;
+                    }
+
+                    totalInvestorAmount += amount;
+
+                    investments.Add(new InventoryInvestment
+                    {
+                        InventoryItemId = result.Item.Id,
+                        InvestorUserId = investorId!,
+                        Amount = amount,
+                        Percentage = percentage,
+                        Status = InvestmentStatus.Pending,
+                        CreatedAt = DateTime.UtcNow
+                    });
+
+                    costs.Add(new InventoryCost
+                    {
+                        InventoryItemId = result.Item.Id,
+                        InvestorUserId = investorId!,
+                        Amount = amount,
+                        Type = "Initial Investment",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            // Creator's share is whatever remains of the cost price.
+            var creatorId = result.Item.CreatedByUserId;
+            var creatorShare = totalCost - totalInvestorAmount;
+            if (creatorShare > 0 && !string.IsNullOrEmpty(creatorId))
+            {
+                costs.Add(new InventoryCost
                 {
                     InventoryItemId = result.Item.Id,
-                    InvestorUserId = investorId!,
-                    Amount = amount,
-                    Percentage = percentage,
-                    Status = InvestmentStatus.Pending,
+                    InvestorUserId = creatorId,
+                    Amount = creatorShare,
+                    Type = "Initial Investment",
                     CreatedAt = DateTime.UtcNow
                 });
             }
@@ -176,6 +207,15 @@ public class InventoryController : Controller
             if (investments.Count > 0)
             {
                 _db.InventoryInvestments.AddRange(investments);
+            }
+
+            if (costs.Count > 0)
+            {
+                _db.InventoryCosts.AddRange(costs);
+            }
+
+            if (investments.Count > 0 || costs.Count > 0)
+            {
                 await _db.SaveChangesAsync(cancellationToken);
             }
         }
@@ -400,11 +440,25 @@ public class InventoryController : Controller
         }
 
         var investment = item.Investments.FirstOrDefault(x => x.InvestorUserId == model.InvestorUserId);
-        if (investment == null)
+        var isCreator = !string.IsNullOrEmpty(item.CreatedByUserId) &&
+                        item.CreatedByUserId == model.InvestorUserId;
+
+        // If neither an investment nor the creator, block the operation.
+        if (investment == null && !isCreator)
         {
             ModelState.AddModelError("", "Selected investor is not associated with this vehicle.");
 
-            var investorIds = item.Investments.Select(x => x.InvestorUserId).Distinct().ToList();
+            var investorIds = item.Investments
+                .Select(x => x.InvestorUserId)
+                .Where(id => id != null)
+                .Select(id => id!)
+                .ToList();
+
+            if (!string.IsNullOrEmpty(item.CreatedByUserId) && !investorIds.Contains(item.CreatedByUserId))
+            {
+                investorIds.Add(item.CreatedByUserId);
+            }
+
             var investors = _userManager.Users
                 .Where(u => investorIds.Contains(u.Id))
                 .OrderBy(u => u.Email)
@@ -428,7 +482,10 @@ public class InventoryController : Controller
 
         // Update totals and investor share.
         item.CostPrice += model.Amount;
-        investment.Amount += model.Amount;
+        if (investment != null)
+        {
+            investment.Amount += model.Amount;
+        }
 
         RecalculateInvestmentPercentages(item);
 
@@ -442,6 +499,7 @@ public class InventoryController : Controller
     public async Task<IActionResult> EditCosts(int id, CancellationToken cancellationToken = default)
     {
         var item = await _db.InventoryItems
+            .Include(i => i.Investments)
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
 
         if (item == null)
@@ -453,6 +511,56 @@ public class InventoryController : Controller
             .Where(c => c.InventoryItemId == id)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync(cancellationToken);
+
+        // If no costs exist yet, backfill initial investments (investors + creator share)
+        if (!costs.Any())
+        {
+            var newCosts = new List<InventoryCost>();
+            var totalInvestorAmount = 0m;
+
+            if (item.Investments != null && item.Investments.Any())
+            {
+                foreach (var inv in item.Investments)
+                {
+                    totalInvestorAmount += inv.Amount;
+
+                    if (inv.Amount > 0 && !string.IsNullOrEmpty(inv.InvestorUserId))
+                    {
+                        newCosts.Add(new InventoryCost
+                        {
+                            InventoryItemId = item.Id,
+                            InvestorUserId = inv.InvestorUserId,
+                            Amount = inv.Amount,
+                            Type = "Initial Investment",
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            var creatorId = item.CreatedByUserId;
+            var creatorShare = item.CostPrice - totalInvestorAmount;
+            if (creatorShare > 0 && !string.IsNullOrEmpty(creatorId))
+            {
+                newCosts.Add(new InventoryCost
+                {
+                    InventoryItemId = item.Id,
+                    InvestorUserId = creatorId,
+                    Amount = creatorShare,
+                    Type = "Initial Investment",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            if (newCosts.Count > 0)
+            {
+                _db.InventoryCosts.AddRange(newCosts);
+                await _db.SaveChangesAsync(cancellationToken);
+                costs = newCosts
+                    .OrderByDescending(c => c.CreatedAt)
+                    .ToList();
+            }
+        }
 
         var investorIds = costs
             .Select(c => c.InvestorUserId)
