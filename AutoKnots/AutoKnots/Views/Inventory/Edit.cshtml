@@ -46,12 +46,30 @@
                         </div>
                         <div class="row mb-4 align-items-center">
                             <div class="col-lg-4">
+                                <label class="fw-semibold">Region: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-globe"></i></div>
+                                    <select id="RegionSelect" class="form-select">
+                                        <option value="Pakistan">Pakistan</option>
+                                        <option value="UK">UK</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
                                 <label asp-for="Make" class="fw-semibold">Make: </label>
                             </div>
                             <div class="col-lg-8">
                                 <div class="input-group">
                                     <div class="input-group-text"><i class="feather-truck"></i></div>
-                                    <input asp-for="Make" class="form-control" placeholder="e.g. Toyota, Honda" />
+                                    <select id="MakeSelect" class="form-select">
+                                        <option value="">-- Select Make --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Make" id="Make" />
+                                    <input type="text" id="MakeOther" class="form-control d-none" placeholder="Enter make" />
                                 </div>
                                 <span asp-validation-for="Make" class="text-danger fs-12"></span>
                             </div>
@@ -63,7 +81,11 @@
                             <div class="col-lg-8">
                                 <div class="input-group">
                                     <div class="input-group-text"><i class="feather-box"></i></div>
-                                    <input asp-for="Model" class="form-control" placeholder="e.g. Corolla, Civic" />
+                                    <select id="ModelSelect" class="form-select">
+                                        <option value="">-- Select Model --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Model" id="Model" />
+                                    <input type="text" id="ModelOther" class="form-control d-none" placeholder="Enter model" />
                                 </div>
                                 <span asp-validation-for="Model" class="text-danger fs-12"></span>
                             </div>
@@ -75,7 +97,11 @@
                             <div class="col-lg-8">
                                 <div class="input-group">
                                     <div class="input-group-text"><i class="feather-sliders"></i></div>
-                                    <input asp-for="Variant" class="form-control" placeholder="Optional variant/trim" />
+                                    <select id="VariantSelect" class="form-select">
+                                        <option value="">-- Select Variant --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Variant" id="Variant" />
+                                    <input type="text" id="VariantOther" class="form-control d-none" placeholder="Enter variant (optional)" />
                                 </div>
                             </div>
                         </div>
@@ -242,4 +268,165 @@
 <!-- [ Main Content ] end -->
 @section Scripts {
     @* Client-side validation disabled so form always POSTs; server validates. *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const OTHER = '__other__';
+            let vehicleData = { makes: [] };
+            const makeSelect = document.getElementById('MakeSelect');
+            const modelSelect = document.getElementById('ModelSelect');
+            const variantSelect = document.getElementById('VariantSelect');
+            const makeHidden = document.getElementById('Make');
+            const modelHidden = document.getElementById('Model');
+            const variantHidden = document.getElementById('Variant');
+            const makeOther = document.getElementById('MakeOther');
+            const modelOther = document.getElementById('ModelOther');
+            const variantOther = document.getElementById('VariantOther');
+
+            function showOther(selectEl, otherEl, hiddenEl, isOther) {
+                if (isOther) {
+                    selectEl.classList.add('d-none');
+                    otherEl.classList.remove('d-none');
+                    hiddenEl.value = otherEl.value || '';
+                } else {
+                    selectEl.classList.remove('d-none');
+                    otherEl.classList.add('d-none');
+                    otherEl.value = '';
+                }
+            }
+            function syncMake() { makeHidden.value = makeSelect.value === OTHER ? makeOther.value : (makeSelect.value || ''); }
+            function syncModel() { modelHidden.value = modelSelect.value === OTHER ? modelOther.value : (modelSelect.value || ''); }
+            function syncVariant() { variantHidden.value = variantSelect.value === OTHER ? variantOther.value : (variantSelect.value || ''); }
+
+            makeSelect.addEventListener('change', function () {
+                const v = this.value;
+                showOther(makeSelect, makeOther, makeHidden, v === OTHER);
+                syncMake();
+                modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                modelHidden.value = ''; variantHidden.value = ''; modelOther.value = ''; variantOther.value = '';
+                modelOther.classList.add('d-none'); variantOther.classList.add('d-none');
+                modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
+                if (v && v !== OTHER && vehicleData.makes) {
+                    const make = vehicleData.makes.find(function (m) { return m.name === v; });
+                    if (make && make.models) {
+                        make.models.forEach(function (mo) { modelSelect.appendChild(new Option(mo.name, mo.name)); });
+                        modelSelect.appendChild(new Option('Other', OTHER));
+                    }
+                }
+            });
+            modelSelect.addEventListener('change', function () {
+                const v = this.value;
+                showOther(modelSelect, modelOther, modelHidden, v === OTHER);
+                syncModel();
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                variantHidden.value = ''; variantOther.value = '';
+                variantOther.classList.add('d-none'); variantSelect.classList.remove('d-none');
+                const makeName = makeHidden.value;
+                if (v && v !== OTHER && makeName && vehicleData.makes) {
+                    const make = vehicleData.makes.find(function (m) { return m.name === makeName; });
+                    if (make && make.models) {
+                        const model = make.models.find(function (mo) { return mo.name === v; });
+                        if (model && model.variants && model.variants.length) {
+                            model.variants.forEach(function (va) { variantSelect.appendChild(new Option(va, va)); });
+                            variantSelect.appendChild(new Option('Other', OTHER));
+                        }
+                    }
+                }
+            });
+            variantSelect.addEventListener('change', function () {
+                showOther(variantSelect, variantOther, variantHidden, this.value === OTHER);
+                syncVariant();
+            });
+            makeOther.addEventListener('input', syncMake);
+            modelOther.addEventListener('input', syncModel);
+            variantOther.addEventListener('input', syncVariant);
+
+            var form = document.querySelector('form');
+            if (form) form.addEventListener('submit', function () { syncMake(); syncModel(); syncVariant(); });
+
+            function restoreSelections() {
+                const makeVal = (makeHidden && makeHidden.value) || '';
+                const modelVal = (modelHidden && modelHidden.value) || '';
+                const variantVal = (variantHidden && variantHidden.value) || '';
+                if (makeVal && makeSelect.options.length) {
+                    var found = false;
+                    for (var i = 0; i < makeSelect.options.length; i++) {
+                        if (makeSelect.options[i].value === makeVal) { makeSelect.selectedIndex = i; found = true; break; }
+                    }
+                    if (!found && makeVal) {
+                        makeSelect.value = OTHER;
+                        makeOther.value = makeVal;
+                        makeOther.classList.remove('d-none');
+                        makeSelect.classList.add('d-none');
+                    }
+                    makeSelect.dispatchEvent(new Event('change'));
+                    setTimeout(function () {
+                        if (modelVal && modelSelect.options.length) {
+                            found = false;
+                            for (i = 0; i < modelSelect.options.length; i++) {
+                                if (modelSelect.options[i].value === modelVal) { modelSelect.selectedIndex = i; found = true; break; }
+                            }
+                            if (!found && modelVal) {
+                                modelSelect.value = OTHER;
+                                modelOther.value = modelVal;
+                                modelOther.classList.remove('d-none');
+                                modelSelect.classList.add('d-none');
+                            }
+                            modelSelect.dispatchEvent(new Event('change'));
+                            setTimeout(function () {
+                                if (variantVal && variantSelect.options.length) {
+                                    found = false;
+                                    for (i = 0; i < variantSelect.options.length; i++) {
+                                        if (variantSelect.options[i].value === variantVal) { variantSelect.selectedIndex = i; found = true; break; }
+                                    }
+                                    if (!found && variantVal) {
+                                        variantSelect.value = OTHER;
+                                        variantOther.value = variantVal;
+                                        variantOther.classList.remove('d-none');
+                                        variantSelect.classList.add('d-none');
+                                    }
+                                }
+                                syncMake(); syncModel(); syncVariant();
+                            }, 50);
+                        } else { syncMake(); syncModel(); syncVariant(); }
+                    }, 50);
+                }
+            }
+
+            function getDataUrl() {
+                var region = document.getElementById('RegionSelect').value;
+                return region === 'UK' ? '/data/uk-vehicles.json' : '/data/pakistan-vehicles.json';
+            }
+            function loadMakes(restoreAfter) {
+                vehicleData = { makes: [] };
+                makeSelect.innerHTML = '<option value="">-- Select Make --</option>';
+                modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                makeHidden.value = ''; modelHidden.value = ''; variantHidden.value = '';
+                makeOther.value = ''; modelOther.value = ''; variantOther.value = '';
+                makeOther.classList.add('d-none'); modelOther.classList.add('d-none');
+                modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
+                if (makeSelect.classList.contains('d-none')) {
+                    makeSelect.classList.remove('d-none');
+                    makeOther.classList.add('d-none');
+                }
+                fetch(getDataUrl())
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        vehicleData = data;
+                        if (data.makes && data.makes.length) {
+                            data.makes.forEach(function (m) { makeSelect.appendChild(new Option(m.name, m.name)); });
+                            makeSelect.appendChild(new Option('Other', OTHER));
+                        }
+                        if (restoreAfter) restoreSelections();
+                    })
+                    .catch(function () {
+                        makeSelect.appendChild(new Option('Other', OTHER));
+                        if (restoreAfter) restoreSelections();
+                    });
+            }
+            document.getElementById('RegionSelect').addEventListener('change', function () { loadMakes(false); });
+            loadMakes(true);
+        });
+    </script>
 }

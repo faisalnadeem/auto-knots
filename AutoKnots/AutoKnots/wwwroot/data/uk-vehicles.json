@@ -1,0 +1,210 @@
+{
+  "makes": [
+    {
+      "name": "Vauxhall",
+      "models": [
+        { "name": "Corsa", "variants": ["Design", "GS", "Ultimate", "Electric"] },
+        { "name": "Astra", "variants": ["Design", "GS", "Ultimate", "Sports Tourer"] },
+        { "name": "Mokka", "variants": ["Design", "GS", "Ultimate", "Electric"] },
+        { "name": "Crossland", "variants": ["Design", "GS", "Ultimate"] },
+        { "name": "Grandland", "variants": ["Design", "GS", "Ultimate"] },
+        { "name": "Insignia", "variants": ["Design", "GS", "Ultimate", "Sports Tourer"] },
+        { "name": "Combo", "variants": ["Life", "Edition", "Van"] },
+        { "name": "Vivaro", "variants": ["Life", "Edition", "Sportive"] }
+      ]
+    },
+    {
+      "name": "Ford",
+      "models": [
+        { "name": "Fiesta", "variants": ["Titanium", "ST-Line", "Vignale"] },
+        { "name": "Focus", "variants": ["Titanium", "ST-Line", "Vignale", "Estate"] },
+        { "name": "Puma", "variants": ["Titanium", "ST-Line", "Vignale"] },
+        { "name": "Kuga", "variants": ["Titanium", "ST-Line", "Vignale", "PHEV"] },
+        { "name": "Mondeo", "variants": ["Titanium", "ST-Line", "Vignale", "Hybrid"] },
+        { "name": "Mustang", "variants": ["Fastback", "Convertible", "Mach-E"] },
+        { "name": "Transit", "variants": ["Trend", "Limited", "Custom"] },
+        { "name": "Ranger", "variants": ["Wildtrak", "Raptor", "Limited"] }
+      ]
+    },
+    {
+      "name": "BMW",
+      "models": [
+        { "name": "1 Series", "variants": ["Sport", "M Sport", "M135i"] },
+        { "name": "2 Series", "variants": ["Sport", "M Sport", "Active Tourer", "Gran Coupe"] },
+        { "name": "3 Series", "variants": ["Sport", "M Sport", "M340i", "Touring"] },
+        { "name": "4 Series", "variants": ["Sport", "M Sport", "Gran Coupe", "Convertible"] },
+        { "name": "5 Series", "variants": ["Sport", "M Sport", "Touring", "M550i"] },
+        { "name": "X1", "variants": ["Sport", "M Sport", "xDrive"] },
+        { "name": "X3", "variants": ["Sport", "M Sport", "M40i"] },
+        { "name": "X5", "variants": ["Sport", "M Sport", "M50d"] }
+      ]
+    },
+    {
+      "name": "Mercedes-Benz",
+      "models": [
+        { "name": "A Class", "variants": ["Sport", "AMG Line", "AMG"] },
+        { "name": "C Class", "variants": ["Sport", "AMG Line", "Estate", "AMG"] },
+        { "name": "E Class", "variants": ["Sport", "AMG Line", "Estate", "AMG"] },
+        { "name": "GLA", "variants": ["Sport", "AMG Line", "AMG"] },
+        { "name": "GLC", "variants": ["Sport", "AMG Line", "Coupe", "AMG"] },
+        { "name": "GLE", "variants": ["Sport", "AMG Line", "Coupe", "AMG"] },
+        { "name": "Vito", "variants": ["Trend", "Sport", "Marco Polo"] }
+      ]
+    },
+    {
+      "name": "Audi",
+      "models": [
+        { "name": "A1", "variants": ["Sport", "S Line", "Black Edition"] },
+        { "name": "A3", "variants": ["Sport", "S Line", "Black Edition", "Sportback"] },
+        { "name": "A4", "variants": ["Sport", "S Line", "Black Edition", "Avant"] },
+        { "name": "A6", "variants": ["Sport", "S Line", "Black Edition", "Avant"] },
+        { "name": "Q2", "variants": ["Sport", "S Line", "Black Edition"] },
+        { "name": "Q3", "variants": ["Sport", "S Line", "Black Edition", "Sportback"] },
+        { "name": "Q5", "variants": ["Sport", "S Line", "Black Edition"] },
+        { "name": "Q7", "variants": ["Sport", "S Line", "Black Edition"] }
+      ]
+    },
+    {
+      "name": "Volkswagen",
+      "models": [
+        { "name": "Polo", "variants": ["Life", "R-Line", "GTI"] },
+        { "name": "Golf", "variants": ["Life", "R-Line", "GTI", "R", "Estate"] },
+        { "name": "Passat", "variants": ["Life", "R-Line", "GTE", "Estate"] },
+        { "name": "T-Roc", "variants": ["Life", "R-Line", "Cabriolet"] },
+        { "name": "Tiguan", "variants": ["Life", "R-Line", "Elegance"] },
+        { "name": "Touareg", "variants": ["Black Edition", "R-Line", "Elegance"] },
+        { "name": "Transporter", "variants": ["Startline", "Trendline", "Comfortline", "California"] },
+        { "name": "Caddy", "variants": ["Life", "Trendline", "Maxi"] }
+      ]
+    },
+    {
+      "name": "Nissan",
+      "models": [
+        { "name": "Micra", "variants": ["Visia", "Acenta", "N-Connecta", "Tekna"] },
+        { "name": "Juke", "variants": ["Visia", "Acenta", "N-Connecta", "Tekna"] },
+        { "name": "Qashqai", "variants": ["Visia", "Acenta", "N-Connecta", "Tekna", "e-Power"] },
+        { "name": "X-Trail", "variants": ["Visia", "Acenta", "N-Connecta", "Tekna", "e-Power"] },
+        { "name": "Leaf", "variants": ["Acenta", "N-Connecta", "Tekna", "e+"] },
+        { "name": "Ariya", "variants": ["Advance", "Evolve", "e-4ORCE"] },
+        { "name": "Navara", "variants": ["Visia", "Acenta", "Tekna", "Pro-4X"] }
+      ]
+    },
+    {
+      "name": "Toyota",
+      "models": [
+        { "name": "Yaris", "variants": ["Icon", "Design", "Excel", "GR Sport", "Cross"] },
+        { "name": "Corolla", "variants": ["Icon", "Design", "Excel", "Touring Sports", "GR Sport"] },
+        { "name": "C-HR", "variants": ["Icon", "Design", "Excel", "GR Sport"] },
+        { "name": "RAV4", "variants": ["Icon", "Design", "Excel", "Dynamic", "PHEV"] },
+        { "name": "Hilux", "variants": ["Active", "Invincible", "Invincible X"] },
+        { "name": "Land Cruiser", "variants": ["Utility", "Active", "Invincible"] },
+        { "name": "Proace", "variants": ["City", "Verso", "Electric"] }
+      ]
+    },
+    {
+      "name": "Honda",
+      "models": [
+        { "name": "Jazz", "variants": ["S", "SE", "SR", "Crosstar"] },
+        { "name": "Civic", "variants": ["S", "SE", "SR", "Type R"] },
+        { "name": "HR-V", "variants": ["S", "SE", "SR", "e:HEV"] },
+        { "name": "CR-V", "variants": ["S", "SE", "SR", "e:HEV"] },
+        { "name": "e", "variants": ["Advance", "Elegance"] }
+      ]
+    },
+    {
+      "name": "Hyundai",
+      "models": [
+        { "name": "i10", "variants": ["SE Connect", "Premium", "N Line"] },
+        { "name": "i20", "variants": ["SE Connect", "Premium", "N Line"] },
+        { "name": "i30", "variants": ["SE Connect", "Premium", "N Line", "Touring"] },
+        { "name": "Tucson", "variants": ["SE Connect", "Premium", "N Line", "Plug-in Hybrid"] },
+        { "name": "Kona", "variants": ["SE Connect", "Premium", "N Line", "Electric"] },
+        { "name": "Santa Fe", "variants": ["SE Connect", "Premium", "Plug-in Hybrid"] },
+        { "name": "Ioniq 5", "variants": ["SE Connect", "Premium", "Namsan"] },
+        { "name": "Ioniq 6", "variants": ["SE Connect", "Premium"] }
+      ]
+    },
+    {
+      "name": "Kia",
+      "models": [
+        { "name": "Picanto", "variants": ["2", "3", "GT-Line"] },
+        { "name": "Rio", "variants": ["2", "3", "GT-Line"] },
+        { "name": "Ceed", "variants": ["2", "3", "GT-Line", "Sportswagon"] },
+        { "name": "Niro", "variants": ["2", "3", "GT-Line", "HEV", "PHEV", "EV"] },
+        { "name": "Sportage", "variants": ["2", "3", "GT-Line", "PHEV"] },
+        { "name": "Sorento", "variants": ["2", "3", "GT-Line", "PHEV"] },
+        { "name": "EV6", "variants": ["Air", "GT-Line", "GT"] },
+        { "name": "Stonic", "variants": ["2", "3", "GT-Line"] }
+      ]
+    },
+    {
+      "name": "Skoda",
+      "models": [
+        { "name": "Fabia", "variants": ["S", "SE", "SE L", "Monte Carlo"] },
+        { "name": "Octavia", "variants": ["S", "SE", "SE L", "vRS", "Estate"] },
+        { "name": "Superb", "variants": ["S", "SE", "SE L", "Sportline", "Estate"] },
+        { "name": "Kamiq", "variants": ["S", "SE", "SE L", "Monte Carlo"] },
+        { "name": "Karoq", "variants": ["S", "SE", "SE L", "Sportline"] },
+        { "name": "Kodiaq", "variants": ["S", "SE", "SE L", "Sportline", "vRS"] },
+        { "name": "Enyaq", "variants": ["60", "80", "80x", "vRS"] }
+      ]
+    },
+    {
+      "name": "Jaguar",
+      "models": [
+        { "name": "XE", "variants": ["R-Dynamic", "Portfolio", "P300"] },
+        { "name": "XF", "variants": ["R-Dynamic", "Portfolio", "Sportbrake"] },
+        { "name": "E-Pace", "variants": ["S", "SE", "R-Dynamic", "P300"] },
+        { "name": "F-Pace", "variants": ["S", "SE", "R-Dynamic", "SVR"] },
+        { "name": "I-Pace", "variants": ["S", "SE", "HSE", "Black"] }
+      ]
+    },
+    {
+      "name": "Land Rover",
+      "models": [
+        { "name": "Defender", "variants": ["90", "110", "130", "Commercial"] },
+        { "name": "Discovery", "variants": ["S", "SE", "R-Dynamic", "Sport"] },
+        { "name": "Discovery Sport", "variants": ["S", "SE", "R-Dynamic", "HSE"] },
+        { "name": "Range Rover", "variants": ["Autobiography", "Sport", "Velar", "Evoque"] },
+        { "name": "Range Rover Sport", "variants": ["S", "SE", "HSE", "Autobiography"] },
+        { "name": "Range Rover Velar", "variants": ["S", "SE", "R-Dynamic", "HSE"] },
+        { "name": "Range Rover Evoque", "variants": ["S", "SE", "R-Dynamic", "HSE"] }
+      ]
+    },
+    {
+      "name": "Mini",
+      "models": [
+        { "name": "Hatch", "variants": ["Classic", "Sport", "Exclusive", "Cooper S", "JCW"] },
+        { "name": "Clubman", "variants": ["Classic", "Sport", "Exclusive", "Cooper S", "JCW"] },
+        { "name": "Countryman", "variants": ["Classic", "Sport", "Exclusive", "Cooper S", "PHEV"] },
+        { "name": "Convertible", "variants": ["Classic", "Sport", "Cooper S", "JCW"] },
+        { "name": "Electric", "variants": ["Level 1", "Level 2", "Level 3"] }
+      ]
+    },
+    {
+      "name": "Peugeot",
+      "models": [
+        { "name": "208", "variants": ["Active", "Allure", "GT Line", "e-208"] },
+        { "name": "308", "variants": ["Active", "Allure", "GT Line", "SW", "PHEV"] },
+        { "name": "2008", "variants": ["Active", "Allure", "GT Line", "e-2008"] },
+        { "name": "3008", "variants": ["Active", "Allure", "GT Line", "PHEV"] },
+        { "name": "5008", "variants": ["Active", "Allure", "GT Line"] },
+        { "name": "Partner", "variants": ["Standard", "Professional", "Electric"] },
+        { "name": "Expert", "variants": ["Standard", "Professional", "Electric"] }
+      ]
+    },
+    {
+      "name": "Renault",
+      "models": [
+        { "name": "Clio", "variants": ["Evolution", "Icon", "R.S. Line", "E-Tech"] },
+        { "name": "Captur", "variants": ["Evolution", "Icon", "R.S. Line", "E-Tech"] },
+        { "name": "Megane", "variants": ["Evolution", "Icon", "R.S. Line", "E-Tech", "Estate"] },
+        { "name": "Kadjar", "variants": ["Evolution", "Icon", "S Edition"] },
+        { "name": "Arkana", "variants": ["Evolution", "Icon", "R.S. Line", "E-Tech"] },
+        { "name": "Zoe", "variants": ["Evolution", "Icon", "GT Line"] },
+        { "name": "Master", "variants": ["Trend", "Sport", "E-Tech"] },
+        { "name": "Trafic", "variants": ["Trend", "Sport", "Combi"] }
+      ]
+    }
+  ]
+}

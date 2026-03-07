@@ -46,7 +46,7 @@ namespace AutoKnots.Services;
 
             var totalCount = await query.CountAsync(cancellationToken);
             var items = await query
-                .OrderBy(x => x.Name)
+                .OrderByDescending(x => x.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
