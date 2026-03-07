@@ -303,7 +303,9 @@
                 syncMake();
                 modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
                 variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
-                modelHidden.value = ''; variantHidden.value = ''; modelOther.value = ''; variantOther.value = '';
+                if (!restoringSelections) {
+                    modelHidden.value = ''; variantHidden.value = ''; modelOther.value = ''; variantOther.value = '';
+                }
                 modelOther.classList.add('d-none'); variantOther.classList.add('d-none');
                 modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
                 if (v && v !== OTHER && vehicleData.makes) {
@@ -344,10 +346,12 @@
             var form = document.querySelector('form');
             if (form) form.addEventListener('submit', function () { syncMake(); syncModel(); syncVariant(); });
 
+            var restoringSelections = false;
             function restoreSelections() {
                 const makeVal = (makeHidden && makeHidden.value) || '';
                 const modelVal = (modelHidden && modelHidden.value) || '';
                 const variantVal = (variantHidden && variantHidden.value) || '';
+                restoringSelections = true;
                 if (makeVal && makeSelect.options.length) {
                     var found = false;
                     for (var i = 0; i < makeSelect.options.length; i++) {
@@ -361,23 +365,33 @@
                     }
                     makeSelect.dispatchEvent(new Event('change'));
                     setTimeout(function () {
-                        if (modelVal && modelSelect.options.length) {
+                        var mVal = (modelVal || '').trim();
+                        if (mVal && modelSelect.options.length) {
                             found = false;
-                            for (i = 0; i < modelSelect.options.length; i++) {
-                                if (modelSelect.options[i].value === modelVal) { modelSelect.selectedIndex = i; found = true; break; }
+                            for (var j = 0; j < modelSelect.options.length; j++) {
+                                if ((modelSelect.options[j].value || '').trim() === mVal) {
+                                    modelSelect.selectedIndex = j;
+                                    found = true;
+                                    break;
+                                }
                             }
-                            if (!found && modelVal) {
-                                modelSelect.value = OTHER;
-                                modelOther.value = modelVal;
-                                modelOther.classList.remove('d-none');
-                                modelSelect.classList.add('d-none');
+                            if (!found) {
+                                modelSelect.value = mVal;
+                                if (modelSelect.value !== mVal) {
+                                    modelSelect.value = OTHER;
+                                    modelOther.value = modelVal;
+                                    modelOther.classList.remove('d-none');
+                                    modelSelect.classList.add('d-none');
+                                }
                             }
+                            showOther(modelSelect, modelOther, modelHidden, modelSelect.value === OTHER);
+                            syncModel();
                             modelSelect.dispatchEvent(new Event('change'));
                             setTimeout(function () {
                                 if (variantVal && variantSelect.options.length) {
                                     found = false;
-                                    for (i = 0; i < variantSelect.options.length; i++) {
-                                        if (variantSelect.options[i].value === variantVal) { variantSelect.selectedIndex = i; found = true; break; }
+                                    for (var k = 0; k < variantSelect.options.length; k++) {
+                                        if (variantSelect.options[k].value === variantVal) { variantSelect.selectedIndex = k; found = true; break; }
                                     }
                                     if (!found && variantVal) {
                                         variantSelect.value = OTHER;
@@ -387,22 +401,34 @@
                                     }
                                 }
                                 syncMake(); syncModel(); syncVariant();
+                                restoringSelections = false;
                             }, 50);
-                        } else { syncMake(); syncModel(); syncVariant(); }
-                    }, 50);
-                }
+                        } else { syncMake(); syncModel(); syncVariant(); restoringSelections = false; }
+                    }, 100);
+                } else { restoringSelections = false; }
             }
 
-            function getDataUrl() {
-                var region = document.getElementById('RegionSelect').value;
-                return region === 'UK' ? '/data/uk-vehicles.json' : '/data/pakistan-vehicles.json';
+            function getDataUrl(region) {
+                var r = region != null ? region : document.getElementById('RegionSelect').value;
+                return r === 'UK' ? '/data/uk-vehicles.json' : '/data/pakistan-vehicles.json';
+            }
+            function applyVehicleData(data) {
+                vehicleData = data || { makes: [] };
+                makeSelect.innerHTML = '<option value="">-- Select Make --</option>';
+                if (vehicleData.makes && vehicleData.makes.length) {
+                    vehicleData.makes.forEach(function (m) { makeSelect.appendChild(new Option(m.name, m.name)); });
+                    makeSelect.appendChild(new Option('Other', OTHER));
+                }
             }
             function loadMakes(restoreAfter) {
+                var savedMake = restoreAfter && makeHidden && (makeHidden.value || '').trim();
                 vehicleData = { makes: [] };
                 makeSelect.innerHTML = '<option value="">-- Select Make --</option>';
                 modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
                 variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
-                makeHidden.value = ''; modelHidden.value = ''; variantHidden.value = '';
+                if (!restoreAfter) {
+                    makeHidden.value = ''; modelHidden.value = ''; variantHidden.value = '';
+                }
                 makeOther.value = ''; modelOther.value = ''; variantOther.value = '';
                 makeOther.classList.add('d-none'); modelOther.classList.add('d-none');
                 modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
@@ -410,20 +436,43 @@
                     makeSelect.classList.remove('d-none');
                     makeOther.classList.add('d-none');
                 }
-                fetch(getDataUrl())
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        vehicleData = data;
-                        if (data.makes && data.makes.length) {
-                            data.makes.forEach(function (m) { makeSelect.appendChild(new Option(m.name, m.name)); });
+                if (restoreAfter && savedMake) {
+                    fetch('/data/pakistan-vehicles.json')
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            var inPakistan = data.makes && data.makes.some(function (m) { return (m.name || '').trim() === savedMake; });
+                            if (inPakistan) {
+                                document.getElementById('RegionSelect').value = 'Pakistan';
+                                applyVehicleData(data);
+                                restoreSelections();
+                                return null;
+                            }
+                            document.getElementById('RegionSelect').value = 'UK';
+                            return fetch('/data/uk-vehicles.json').then(function (r) { return r.json(); });
+                        })
+                        .then(function (data) {
+                            if (data && data.makes) {
+                                applyVehicleData(data);
+                                restoreSelections();
+                            }
+                        })
+                        .catch(function () {
                             makeSelect.appendChild(new Option('Other', OTHER));
-                        }
-                        if (restoreAfter) restoreSelections();
-                    })
-                    .catch(function () {
-                        makeSelect.appendChild(new Option('Other', OTHER));
-                        if (restoreAfter) restoreSelections();
-                    });
+                            if (restoreAfter) restoreSelections();
+                        });
+                } else {
+                    fetch(getDataUrl())
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            vehicleData = data;
+                            applyVehicleData(data);
+                            if (restoreAfter) restoreSelections();
+                        })
+                        .catch(function () {
+                            makeSelect.appendChild(new Option('Other', OTHER));
+                            if (restoreAfter) restoreSelections();
+                        });
+                }
             }
             document.getElementById('RegionSelect').addEventListener('change', function () { loadMakes(false); });
             loadMakes(true);
