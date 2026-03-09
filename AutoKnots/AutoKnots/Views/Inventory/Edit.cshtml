@@ -46,20 +46,6 @@
                         </div>
                         <div class="row mb-4 align-items-center">
                             <div class="col-lg-4">
-                                <label class="fw-semibold">Region: </label>
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="input-group">
-                                    <div class="input-group-text"><i class="feather-globe"></i></div>
-                                    <select id="RegionSelect" class="form-select">
-                                        <option value="Pakistan">Pakistan</option>
-                                        <option value="UK">UK</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-4 align-items-center">
-                            <div class="col-lg-4">
                                 <label asp-for="Make" class="fw-semibold">Make: </label>
                             </div>
                             <div class="col-lg-8">
@@ -408,8 +394,9 @@
                 } else { restoringSelections = false; }
             }
 
+            var currentRegion = 'Pakistan';
             function getDataUrl(region) {
-                var r = region != null ? region : document.getElementById('RegionSelect').value;
+                var r = region || currentRegion || 'Pakistan';
                 return r === 'UK' ? '/data/uk-vehicles.json' : '/data/pakistan-vehicles.json';
             }
             function applyVehicleData(data) {
@@ -442,12 +429,12 @@
                         .then(function (data) {
                             var inPakistan = data.makes && data.makes.some(function (m) { return (m.name || '').trim() === savedMake; });
                             if (inPakistan) {
-                                document.getElementById('RegionSelect').value = 'Pakistan';
+                                currentRegion = 'Pakistan';
                                 applyVehicleData(data);
                                 restoreSelections();
                                 return null;
                             }
-                            document.getElementById('RegionSelect').value = 'UK';
+                            currentRegion = 'UK';
                             return fetch('/data/uk-vehicles.json').then(function (r) { return r.json(); });
                         })
                         .then(function (data) {
@@ -474,7 +461,6 @@
                         });
                 }
             }
-            document.getElementById('RegionSelect').addEventListener('change', function () { loadMakes(false); });
             loadMakes(true);
         });
     </script>
