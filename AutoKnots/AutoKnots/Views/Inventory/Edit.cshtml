@@ -1,0 +1,467 @@
+@model AutoKnots.Models.InventoryItem
+@{
+    ViewData["Title"] = "Edit Inventory";
+}
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Edit Inventory</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Inventory</a></li>
+            <li class="breadcrumb-item">Edit</li>
+        </ul>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card stretch stretch-full">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Edit Vehicle</h5>
+                    <a asp-action="EditCosts" asp-route-id="@Model.Id" class="btn btn-light-brand">
+                        Costing
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    <form method="post" asp-action="Edit" novalidate>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Name" class="fw-semibold">Name: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-package"></i></div>
+                                    <input asp-for="Name" class="form-control" placeholder="Name" />
+                                </div>
+                                <span asp-validation-for="Name" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Make" class="fw-semibold">Make: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-truck"></i></div>
+                                    <select id="MakeSelect" class="form-select">
+                                        <option value="">-- Select Make --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Make" id="Make" />
+                                    <input type="text" id="MakeOther" class="form-control d-none" placeholder="Enter make" />
+                                </div>
+                                <span asp-validation-for="Make" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Model" class="fw-semibold">Model: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-box"></i></div>
+                                    <select id="ModelSelect" class="form-select">
+                                        <option value="">-- Select Model --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Model" id="Model" />
+                                    <input type="text" id="ModelOther" class="form-control d-none" placeholder="Enter model" />
+                                </div>
+                                <span asp-validation-for="Model" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="Variant" class="fw-semibold">Variant: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-sliders"></i></div>
+                                    <select id="VariantSelect" class="form-select">
+                                        <option value="">-- Select Variant --</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Variant" id="Variant" />
+                                    <input type="text" id="VariantOther" class="form-control d-none" placeholder="Enter variant (optional)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="EngineNumber" class="fw-semibold">Engine Number: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-cpu"></i></div>
+                                    <input asp-for="EngineNumber" class="form-control" placeholder="Engine number" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="ChassisNumber" class="fw-semibold">Chassis Number: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-hash"></i></div>
+                                    <input asp-for="ChassisNumber" class="form-control" placeholder="Chassis number" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="PurchaseDate" class="fw-semibold">Purchase Date: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-calendar"></i></div>
+                                    <input asp-for="PurchaseDate" class="form-control" type="date" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="CostPrice" class="fw-semibold">Cost Price: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="input-group">
+                                    <div class="input-group-text"><i class="feather-dollar-sign"></i></div>
+                                    <input asp-for="CostPrice" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="CostPrice" class="text-danger fs-12"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-lg-4">
+                                <label asp-for="IsActive" class="fw-semibold">Active: </label>
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                                    <label asp-for="IsActive" class="form-check-label">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-4" />
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                @{
+                                    var investors = ViewBag.Investors as IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser> ?? Enumerable.Empty<Microsoft.AspNetCore.Identity.IdentityUser>();
+                                }
+                                <h6 class="fw-semibold mb-2">Investor Allocations</h6>
+                                <p class="text-muted fs-12 mb-3">
+                                    Update investor allocations for this vehicle. Enter either an amount or a percentage; the other will be calculated
+                                    automatically based on the current cost price.
+                                </p>
+                                @if (investors.Any())
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Select</th>
+                                                    <th>Investor</th>
+                                                    <th>Email</th>
+                                                    <th style="width: 160px;">Amount</th>
+                                                    <th style="width: 160px;">Percentage %</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var inv in investors)
+                                                {
+                                                    var existing = Model.Investments.FirstOrDefault(x => x.InvestorUserId == inv.Id);
+                                                    var existingAmountValue = existing != null ? existing.Amount.ToString("0.00") : string.Empty;
+                                                    var existingPercentageValue = existing?.Percentage.HasValue == true
+                                                        ? existing!.Percentage!.Value.ToString("0.00")
+                                                        : string.Empty;
+                                                    <tr>
+                                                        <td>
+                                                            <div class="form-check">
+                                                                <input class="form-check-input" type="checkbox" name="investorIds" value="@inv.Id" id="inv_@inv.Id"
+                                                                       @(existing != null ? "checked" : "") />
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <label class="mb-0" for="inv_@inv.Id">@inv.UserName</label>
+                                                        </td>
+                                                        <td>@inv.Email</td>
+                                                        <td>
+                                                            <input name="amount_@inv.Id" type="number" step="0.01" min="0"
+                                                                   class="form-control form-control-sm"
+                                                                   value="@existingAmountValue"
+                                                                   placeholder="0.00" />
+                                                        </td>
+                                                        <td>
+                                                            <input name="percentage_@inv.Id" type="number" step="0.01" min="0" max="100"
+                                                                   class="form-control form-control-sm"
+                                                                   value="@existingPercentageValue"
+                                                                   placeholder="%" />
+                                                        </td>
+                                                        <td>
+                                                            @if (existing != null)
+                                                            {
+                                                                switch (existing.Status)
+                                                                {
+                                                                    case AutoKnots.Models.InvestmentStatus.Approved:
+                                                                        <span class="badge bg-soft-success text-success">Approved</span>
+                                                                        break;
+                                                                    case AutoKnots.Models.InvestmentStatus.Rejected:
+                                                                        <span class="badge bg-soft-danger text-danger">Rejected</span>
+                                                                        break;
+                                                                    default:
+                                                                        <span class="badge bg-soft-warning text-warning">Pending</span>
+                                                                        break;
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-soft-secondary text-secondary">Not Set</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info mb-0">
+                                        No other users are available as investors yet.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <hr class="my-4" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="feather-save me-2"></i> Save
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+@section Scripts {
+    @* Client-side validation disabled so form always POSTs; server validates. *@
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const OTHER = '__other__';
+            let vehicleData = { makes: [] };
+            const makeSelect = document.getElementById('MakeSelect');
+            const modelSelect = document.getElementById('ModelSelect');
+            const variantSelect = document.getElementById('VariantSelect');
+            const makeHidden = document.getElementById('Make');
+            const modelHidden = document.getElementById('Model');
+            const variantHidden = document.getElementById('Variant');
+            const makeOther = document.getElementById('MakeOther');
+            const modelOther = document.getElementById('ModelOther');
+            const variantOther = document.getElementById('VariantOther');
+
+            function showOther(selectEl, otherEl, hiddenEl, isOther) {
+                if (isOther) {
+                    selectEl.classList.add('d-none');
+                    otherEl.classList.remove('d-none');
+                    hiddenEl.value = otherEl.value || '';
+                } else {
+                    selectEl.classList.remove('d-none');
+                    otherEl.classList.add('d-none');
+                    otherEl.value = '';
+                }
+            }
+            function syncMake() { makeHidden.value = makeSelect.value === OTHER ? makeOther.value : (makeSelect.value || ''); }
+            function syncModel() { modelHidden.value = modelSelect.value === OTHER ? modelOther.value : (modelSelect.value || ''); }
+            function syncVariant() { variantHidden.value = variantSelect.value === OTHER ? variantOther.value : (variantSelect.value || ''); }
+
+            makeSelect.addEventListener('change', function () {
+                const v = this.value;
+                showOther(makeSelect, makeOther, makeHidden, v === OTHER);
+                syncMake();
+                modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                if (!restoringSelections) {
+                    modelHidden.value = ''; variantHidden.value = ''; modelOther.value = ''; variantOther.value = '';
+                }
+                modelOther.classList.add('d-none'); variantOther.classList.add('d-none');
+                modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
+                if (v && v !== OTHER && vehicleData.makes) {
+                    const make = vehicleData.makes.find(function (m) { return m.name === v; });
+                    if (make && make.models) {
+                        make.models.forEach(function (mo) { modelSelect.appendChild(new Option(mo.name, mo.name)); });
+                        modelSelect.appendChild(new Option('Other', OTHER));
+                    }
+                }
+            });
+            modelSelect.addEventListener('change', function () {
+                const v = this.value;
+                showOther(modelSelect, modelOther, modelHidden, v === OTHER);
+                syncModel();
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                variantHidden.value = ''; variantOther.value = '';
+                variantOther.classList.add('d-none'); variantSelect.classList.remove('d-none');
+                const makeName = makeHidden.value;
+                if (v && v !== OTHER && makeName && vehicleData.makes) {
+                    const make = vehicleData.makes.find(function (m) { return m.name === makeName; });
+                    if (make && make.models) {
+                        const model = make.models.find(function (mo) { return mo.name === v; });
+                        if (model && model.variants && model.variants.length) {
+                            model.variants.forEach(function (va) { variantSelect.appendChild(new Option(va, va)); });
+                            variantSelect.appendChild(new Option('Other', OTHER));
+                        }
+                    }
+                }
+            });
+            variantSelect.addEventListener('change', function () {
+                showOther(variantSelect, variantOther, variantHidden, this.value === OTHER);
+                syncVariant();
+            });
+            makeOther.addEventListener('input', syncMake);
+            modelOther.addEventListener('input', syncModel);
+            variantOther.addEventListener('input', syncVariant);
+
+            var form = document.querySelector('form');
+            if (form) form.addEventListener('submit', function () { syncMake(); syncModel(); syncVariant(); });
+
+            var restoringSelections = false;
+            function restoreSelections() {
+                const makeVal = (makeHidden && makeHidden.value) || '';
+                const modelVal = (modelHidden && modelHidden.value) || '';
+                const variantVal = (variantHidden && variantHidden.value) || '';
+                restoringSelections = true;
+                if (makeVal && makeSelect.options.length) {
+                    var found = false;
+                    for (var i = 0; i < makeSelect.options.length; i++) {
+                        if (makeSelect.options[i].value === makeVal) { makeSelect.selectedIndex = i; found = true; break; }
+                    }
+                    if (!found && makeVal) {
+                        makeSelect.value = OTHER;
+                        makeOther.value = makeVal;
+                        makeOther.classList.remove('d-none');
+                        makeSelect.classList.add('d-none');
+                    }
+                    makeSelect.dispatchEvent(new Event('change'));
+                    setTimeout(function () {
+                        var mVal = (modelVal || '').trim();
+                        if (mVal && modelSelect.options.length) {
+                            found = false;
+                            for (var j = 0; j < modelSelect.options.length; j++) {
+                                if ((modelSelect.options[j].value || '').trim() === mVal) {
+                                    modelSelect.selectedIndex = j;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                modelSelect.value = mVal;
+                                if (modelSelect.value !== mVal) {
+                                    modelSelect.value = OTHER;
+                                    modelOther.value = modelVal;
+                                    modelOther.classList.remove('d-none');
+                                    modelSelect.classList.add('d-none');
+                                }
+                            }
+                            showOther(modelSelect, modelOther, modelHidden, modelSelect.value === OTHER);
+                            syncModel();
+                            modelSelect.dispatchEvent(new Event('change'));
+                            setTimeout(function () {
+                                if (variantVal && variantSelect.options.length) {
+                                    found = false;
+                                    for (var k = 0; k < variantSelect.options.length; k++) {
+                                        if (variantSelect.options[k].value === variantVal) { variantSelect.selectedIndex = k; found = true; break; }
+                                    }
+                                    if (!found && variantVal) {
+                                        variantSelect.value = OTHER;
+                                        variantOther.value = variantVal;
+                                        variantOther.classList.remove('d-none');
+                                        variantSelect.classList.add('d-none');
+                                    }
+                                }
+                                syncMake(); syncModel(); syncVariant();
+                                restoringSelections = false;
+                            }, 50);
+                        } else { syncMake(); syncModel(); syncVariant(); restoringSelections = false; }
+                    }, 100);
+                } else { restoringSelections = false; }
+            }
+
+            var currentRegion = 'Pakistan';
+            function getDataUrl(region) {
+                var r = region || currentRegion || 'Pakistan';
+                return r === 'UK' ? '/data/uk-vehicles.json' : '/data/pakistan-vehicles.json';
+            }
+            function applyVehicleData(data) {
+                vehicleData = data || { makes: [] };
+                makeSelect.innerHTML = '<option value="">-- Select Make --</option>';
+                if (vehicleData.makes && vehicleData.makes.length) {
+                    vehicleData.makes.forEach(function (m) { makeSelect.appendChild(new Option(m.name, m.name)); });
+                    makeSelect.appendChild(new Option('Other', OTHER));
+                }
+            }
+            function loadMakes(restoreAfter) {
+                var savedMake = restoreAfter && makeHidden && (makeHidden.value || '').trim();
+                vehicleData = { makes: [] };
+                makeSelect.innerHTML = '<option value="">-- Select Make --</option>';
+                modelSelect.innerHTML = '<option value="">-- Select Model --</option>';
+                variantSelect.innerHTML = '<option value="">-- Select Variant --</option>';
+                if (!restoreAfter) {
+                    makeHidden.value = ''; modelHidden.value = ''; variantHidden.value = '';
+                }
+                makeOther.value = ''; modelOther.value = ''; variantOther.value = '';
+                makeOther.classList.add('d-none'); modelOther.classList.add('d-none');
+                modelSelect.classList.remove('d-none'); variantSelect.classList.remove('d-none');
+                if (makeSelect.classList.contains('d-none')) {
+                    makeSelect.classList.remove('d-none');
+                    makeOther.classList.add('d-none');
+                }
+                if (restoreAfter && savedMake) {
+                    fetch('/data/pakistan-vehicles.json')
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            var inPakistan = data.makes && data.makes.some(function (m) { return (m.name || '').trim() === savedMake; });
+                            if (inPakistan) {
+                                currentRegion = 'Pakistan';
+                                applyVehicleData(data);
+                                restoreSelections();
+                                return null;
+                            }
+                            currentRegion = 'UK';
+                            return fetch('/data/uk-vehicles.json').then(function (r) { return r.json(); });
+                        })
+                        .then(function (data) {
+                            if (data && data.makes) {
+                                applyVehicleData(data);
+                                restoreSelections();
+                            }
+                        })
+                        .catch(function () {
+                            makeSelect.appendChild(new Option('Other', OTHER));
+                            if (restoreAfter) restoreSelections();
+                        });
+                } else {
+                    fetch(getDataUrl())
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            vehicleData = data;
+                            applyVehicleData(data);
+                            if (restoreAfter) restoreSelections();
+                        })
+                        .catch(function () {
+                            makeSelect.appendChild(new Option('Other', OTHER));
+                            if (restoreAfter) restoreSelections();
+                        });
+                }
+            }
+            loadMakes(true);
+        });
+    </script>
+}

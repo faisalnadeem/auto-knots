@@ -1,0 +1,269 @@
+{
+  "makes": [
+    {
+      "name": "Suzuki",
+      "models": [
+        {
+          "name": "Alto",
+          "variants": [ "VX", "VXR", "VXR AGS", "VXL AGS" ]
+        },
+        {
+          "name": "Cultus",
+          "variants": [ "VXR", "VXL", "AGS" ]
+        },
+        {
+          "name": "Swift",
+          "variants": [ "GL MT", "GL CVT", "GLX CVT" ]
+        },
+        {
+          "name": "Wagon R",
+          "variants": [ "VXR", "VXL", "AGS" ]
+        },
+        {
+          "name": "Bolan",
+          "variants": [ "VX", "VXR", "Cargo Van" ]
+        },
+        {
+          "name": "Ravi",
+          "variants": [ "Pickup" ]
+        },
+        {
+          "name": "Every",
+          "variants": [ "GA", "PA", "PC" ]
+        },
+        {
+          "name": "APV",
+          "variants": [ "Standard" ]
+        },
+        {
+          "name": "Jimny",
+          "variants": [ "GL MT", "GLX AT" ]
+        }
+      ]
+    },
+    {
+      "name": "Toyota",
+      "models": [
+        {
+          "name": "Corolla",
+          "variants": [ "XLi", "GLi 1.3", "Altis 1.6", "Altis 1.8 CVT", "Grande 1.8" ]
+        },
+        {
+          "name": "Yaris",
+          "variants": [ "1.3 GLi MT", "1.3 ATIV MT", "1.3 GLi CVT", "1.3 ATIV CVT", "1.5 ATIV X CVT" ]
+        },
+        {
+          "name": "Corolla Cross",
+          "variants": [ "1.8 HEV", "1.8 HEV X" ]
+        },
+        {
+          "name": "Hilux Revo",
+          "variants": [ "Single Cab", "E", "G", "V", "Rocco" ]
+        },
+        {
+          "name": "Fortuner",
+          "variants": [ "2.7 G", "2.8 Sigma 4", "Legender" ]
+        },
+        {
+          "name": "Land Cruiser LC300",
+          "variants": [ "ZX", "GR-S" ]
+        },
+        {
+          "name": "Prado",
+          "variants": [ "TX", "TXL" ]
+        },
+        {
+          "name": "Camry",
+          "variants": [ "Hybrid" ]
+        },
+        {
+          "name": "Rush",
+          "variants": [ "G AT" ]
+        }
+      ]
+    },
+    {
+      "name": "Honda",
+      "models": [
+        {
+          "name": "City",
+          "variants": [ "1.2 MT", "1.2 CVT", "1.5 CVT", "Aspire 1.5 CVT" ]
+        },
+        {
+          "name": "Civic",
+          "variants": [ "1.5L Turbo", "RS" ]
+        },
+        {
+          "name": "BR-V",
+          "variants": [ "i-VTEC S" ]
+        },
+        {
+          "name": "HR-V",
+          "variants": [ "VTI", "VTI-S" ]
+        },
+        {
+          "name": "Accord",
+          "variants": [ "Hybrid" ]
+        }
+      ]
+    },
+    {
+      "name": "Kia",
+      "models": [
+        {
+          "name": "Picanto",
+          "variants": [ "1.0 MT", "1.0 AT" ]
+        },
+        {
+          "name": "Stonic",
+          "variants": [ "EX", "EX+", "GT-Line" ]
+        },
+        {
+          "name": "Sportage",
+          "variants": [ "Alpha", "FWD", "AWD" ]
+        },
+        {
+          "name": "Sorento",
+          "variants": [ "2.4 FWD", "2.4 AWD", "1.6 Hybrid" ]
+        },
+        {
+          "name": "Carnival",
+          "variants": [ "Executive", "Premium" ]
+        }
+      ]
+    },
+    {
+      "name": "Hyundai",
+      "models": [
+        {
+          "name": "Elantra",
+          "variants": [ "GL", "GLS" ]
+        },
+        {
+          "name": "Sonata",
+          "variants": [ "2.0", "2.5" ]
+        },
+        {
+          "name": "Tucson",
+          "variants": [ "GLS Sport", "Ultimate" ]
+        },
+        {
+          "name": "Santa Fe",
+          "variants": [ "Signature" ]
+        },
+        {
+          "name": "Porter H-100",
+          "variants": [ "Deckless", "Flat Deck", "High Deck" ]
+        }
+      ]
+    },
+    {
+      "name": "Changan",
+      "models": [
+        {
+          "name": "Alsvin",
+          "variants": [ "MT Comfort", "DCT Comfort", "DCT Lumiere" ]
+        },
+        {
+          "name": "Karvaan",
+          "variants": [ "Base", "Plus" ]
+        },
+        {
+          "name": "Oshan X7",
+          "variants": [ "Comfort", "FutureSense" ]
+        }
+      ]
+    },
+    {
+      "name": "MG",
+      "models": [
+        {
+          "name": "ZS",
+          "variants": [ "Standard", "EV" ]
+        },
+        {
+          "name": "HS",
+          "variants": [ "1.5 Turbo", "PHEV" ]
+        },
+        {
+          "name": "MG 5",
+          "variants": [ "1.5L" ]
+        }
+      ]
+    },
+    {
+      "name": "Haval",
+      "models": [
+        {
+          "name": "H6",
+          "variants": [ "1.5T", "2.0T", "Hybrid" ]
+        },
+        {
+          "name": "Jolion",
+          "variants": [ "1.5T" ]
+        }
+      ]
+    },
+    {
+      "name": "Chery",
+      "models": [
+        {
+          "name": "Tiggo 4 Pro",
+          "variants": [ "1.5T" ]
+        },
+        {
+          "name": "Tiggo 7 Pro",
+          "variants": [ "1.5T" ]
+        },
+        {
+          "name": "Tiggo 8 Pro",
+          "variants": [ "1.6T" ]
+        }
+      ]
+    },
+    {
+      "name": "Proton",
+      "models": [
+        {
+          "name": "Saga",
+          "variants": [ "Standard MT", "Standard AT" ]
+        }
+      ]
+    },
+    {
+      "name": "DFSK",
+      "models": [
+        {
+          "name": "Glory 580",
+          "variants": [ "1.5 CVT" ]
+        },
+        {
+          "name": "K01",
+          "variants": [ "Pickup" ]
+        }
+      ]
+    },
+    {
+      "name": "JAC",
+      "models": [
+        {
+          "name": "T9 Hunter",
+          "variants": [ "Double Cab" ]
+        }
+      ]
+    },
+    {
+      "name": "Nissan",
+      "models": [
+        {
+          "name": "X-Trail",
+          "variants": [ "S Hybrid", "Hybrid SV" ]
+        },
+        {
+          "name": "Navara",
+          "variants": [ "VE", "VL" ]
+        }
+      ]
+    }
+  ]
+}
