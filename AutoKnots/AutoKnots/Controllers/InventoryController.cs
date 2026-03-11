@@ -79,6 +79,45 @@ public class InventoryController : Controller
         var form = Request.Form;
         var investorIds = form["investorIds"];
 
+        // Validate that if any investors are selected, at least one has a non-zero
+        // amount or percentage so we don't silently drop all allocations.
+        if (investorIds.Count > 0)
+        {
+            var hasValidAllocation = false;
+            foreach (var investorId in investorIds)
+            {
+                var amountKey = $"amount_{investorId}";
+                var percentageKey = $"percentage_{investorId}";
+
+                if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+
+                if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+            }
+
+            if (!hasValidAllocation)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "You selected investors but did not enter any amount or percentage. Please enter an allocation for at least one selected investor.");
+
+                var currentUserIdForView = _userManager.GetUserId(User);
+                var investorsForView = _userManager.Users
+                    .Where(u => u.Id != currentUserIdForView)
+                    .OrderBy(u => u.Email)
+                    .ToList();
+
+                ViewBag.Investors = investorsForView;
+                return View(new InventoryItem { IsActive = true });
+            }
+        }
+
         var item = new InventoryItem();
 
         item.Name = form["Name"]!;
@@ -119,6 +158,13 @@ public class InventoryController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError("", result.Error ?? "Failed to create.");
+            var currentUserIdForView = _userManager.GetUserId(User);
+            var investorsForView = _userManager.Users
+                .Where(u => u.Id != currentUserIdForView)
+                .OrderBy(u => u.Email)
+                .ToList();
+
+            ViewBag.Investors = investorsForView;
             return View(item);
         }
 
@@ -277,6 +323,50 @@ public class InventoryController : Controller
         if (decimal.TryParse(form["SalePrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var sale))
         {
             inventoryItem.SalePrice = sale;
+        }
+
+        // If investors are selected, ensure at least one has a non-zero amount or
+        // percentage so allocations are not silently ignored.
+        if (investorIds.Count > 0)
+        {
+            var hasValidAllocation = false;
+            foreach (var investorId in investorIds)
+            {
+                var amountKey = $"amount_{investorId}";
+                var percentageKey = $"percentage_{investorId}";
+
+                if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+
+                if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+            }
+
+            if (!hasValidAllocation)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "You selected investors but did not enter any amount or percentage. Please enter an allocation for at least one selected investor.");
+
+                var creatorIdForView = inventoryItem.CreatedByUserId ?? _userManager.GetUserId(User);
+                var investorsQueryForView = _userManager.Users.AsQueryable();
+                if (!string.IsNullOrEmpty(creatorIdForView))
+                {
+                    investorsQueryForView = investorsQueryForView.Where(u => u.Id != creatorIdForView);
+                }
+
+                var investorsForView = investorsQueryForView
+                    .OrderBy(u => u.Email)
+                    .ToList();
+
+                ViewBag.Investors = investorsForView;
+                return View(inventoryItem);
+            }
         }
 
         // If any investors are selected, move the item into PendingApproval
