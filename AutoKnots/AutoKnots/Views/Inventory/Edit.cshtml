@@ -24,9 +24,12 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Edit Vehicle</h5>
                     <div class="d-flex gap-2">
-                        <a asp-action="Profit" asp-route-id="@Model.Id" class="btn btn-light-secondary">
-                            Profit
-                        </a>
+                        @if (Model.Status == AutoKnots.Models.InventoryStatus.Sold)
+                        {
+                            <a asp-action="Profit" asp-route-id="@Model.Id" class="btn btn-light-secondary">
+                                Profit
+                            </a>
+                        }
                         <a asp-action="EditCosts" asp-route-id="@Model.Id" class="btn btn-light-brand">
                             Costing
                         </a>

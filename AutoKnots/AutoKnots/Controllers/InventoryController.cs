@@ -462,6 +462,12 @@ public class InventoryController : Controller
             return NotFound();
         }
 
+        if (item.Status == InventoryStatus.Sold)
+        {
+            TempData["ErrorMessage"] = "This vehicle has been sold. You cannot add new costs.";
+            return RedirectToAction(nameof(EditCosts), new { id = item.Id });
+        }
+
         var investorIds = item.Investments
             .Select(x => x.InvestorUserId)
             .Where(id => id != null)
@@ -527,6 +533,12 @@ public class InventoryController : Controller
         if (item == null)
         {
             return NotFound();
+        }
+
+        if (item.Status == InventoryStatus.Sold)
+        {
+            TempData["ErrorMessage"] = "This vehicle has been sold. You cannot add new costs.";
+            return RedirectToAction(nameof(EditCosts), new { id = item.Id });
         }
 
         var investment = item.Investments.FirstOrDefault(x => x.InvestorUserId == model.InvestorUserId);
@@ -665,6 +677,7 @@ public class InventoryController : Controller
 
         ViewBag.InventoryName = item.Name;
         ViewBag.InvestorNames = investors;
+        ViewBag.IsSold = item.Status == InventoryStatus.Sold;
 
         return View(costs);
     }
