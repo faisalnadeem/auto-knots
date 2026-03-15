@@ -97,6 +97,9 @@
                                                     case AutoKnots.Models.InventoryStatus.Failed:
                                                         <span class="badge bg-soft-danger text-danger">Failed</span>
                                                         break;
+                                                    case AutoKnots.Models.InventoryStatus.Sold:
+                                                        <span class="badge bg-soft-primary text-primary">Sold</span>
+                                                        break;
                                                     default:
                                                         <span class="badge bg-soft-secondary text-secondary">Draft</span>
                                                         break;
@@ -105,6 +108,12 @@
                                             <td class="text-end">
                                                 <div class="d-inline-flex align-items-center gap-1">
                                                     <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-light-brand btn-icon" title="Edit"><i class="feather-edit-2"></i></a>
+                                                    @if (item.Status == AutoKnots.Models.InventoryStatus.Active)
+                                                    {
+                                                        <a asp-action="Sell" asp-route-id="@item.Id" class="btn btn-light-success btn-icon" title="Sell">
+                                                            <i class="feather-shopping-cart"></i>
+                                                        </a>
+                                                    }
                                                     <form method="post" asp-action="Delete" asp-route-id="@item.Id" class="mb-0 js-inventory-delete-form" data-inventory-name="@item.Name">
                                                         @Html.AntiForgeryToken()
                                                         <button type="button" class="btn btn-light-danger btn-icon js-inventory-delete-btn" title="Delete"><i class="feather-trash-2"></i></button>

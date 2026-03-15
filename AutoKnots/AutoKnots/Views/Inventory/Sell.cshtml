@@ -1,0 +1,65 @@
+@model AutoKnots.Models.InventorySaleViewModel
+@{
+    ViewData["Title"] = "Sell Vehicle";
+}
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Sell Vehicle</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Inventory</a></li>
+            <li class="breadcrumb-item">Sell</li>
+        </ul>
+    </div>
+</div>
+<!-- [ page-header ] end -->
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sell @Model.InventoryName</h5>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    <form asp-action="Sell" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="InventoryItemId" />
+                        <div class="mb-3">
+                            <label class="fw-semibold">Vehicle</label>
+                            <div>@Model.InventoryName</div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="CurrentCost" class="fw-semibold"></label>
+                            <div>@Model.CurrentCost.ToString("N2")</div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="SellingPrice" class="fw-semibold"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><i class="feather-dollar-sign"></i></div>
+                                <input asp-for="SellingPrice" class="form-control" type="number" step="0.01" min="0" />
+                            </div>
+                            <span asp-validation-for="SellingPrice" class="text-danger fs-12"></span>
+                        </div>
+                        <div class="mb-3 text-muted fs-12">
+                            Profit will be calculated as <strong>selling price - total cost</strong> and
+                            distributed to investors according to their investment percentages.
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="feather-check-circle me-2"></i> Confirm Sale
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+

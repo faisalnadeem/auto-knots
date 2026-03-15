@@ -79,6 +79,45 @@ public class InventoryController : Controller
         var form = Request.Form;
         var investorIds = form["investorIds"];
 
+        // Validate that if any investors are selected, at least one has a non-zero
+        // amount or percentage so we don't silently drop all allocations.
+        if (investorIds.Count > 0)
+        {
+            var hasValidAllocation = false;
+            foreach (var investorId in investorIds)
+            {
+                var amountKey = $"amount_{investorId}";
+                var percentageKey = $"percentage_{investorId}";
+
+                if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+
+                if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+            }
+
+            if (!hasValidAllocation)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "You selected investors but did not enter any amount or percentage. Please enter an allocation for at least one selected investor.");
+
+                var currentUserIdForView = _userManager.GetUserId(User);
+                var investorsForView = _userManager.Users
+                    .Where(u => u.Id != currentUserIdForView)
+                    .OrderBy(u => u.Email)
+                    .ToList();
+
+                ViewBag.Investors = investorsForView;
+                return View(new InventoryItem { IsActive = true });
+            }
+        }
+
         var item = new InventoryItem();
 
         item.Name = form["Name"]!;
@@ -119,6 +158,13 @@ public class InventoryController : Controller
         if (!result.Success)
         {
             ModelState.AddModelError("", result.Error ?? "Failed to create.");
+            var currentUserIdForView = _userManager.GetUserId(User);
+            var investorsForView = _userManager.Users
+                .Where(u => u.Id != currentUserIdForView)
+                .OrderBy(u => u.Email)
+                .ToList();
+
+            ViewBag.Investors = investorsForView;
             return View(item);
         }
 
@@ -279,6 +325,50 @@ public class InventoryController : Controller
             inventoryItem.SalePrice = sale;
         }
 
+        // If investors are selected, ensure at least one has a non-zero amount or
+        // percentage so allocations are not silently ignored.
+        if (investorIds.Count > 0)
+        {
+            var hasValidAllocation = false;
+            foreach (var investorId in investorIds)
+            {
+                var amountKey = $"amount_{investorId}";
+                var percentageKey = $"percentage_{investorId}";
+
+                if (decimal.TryParse(form[amountKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var amt) && amt > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+
+                if (decimal.TryParse(form[percentageKey], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var perc) && perc > 0)
+                {
+                    hasValidAllocation = true;
+                    break;
+                }
+            }
+
+            if (!hasValidAllocation)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "You selected investors but did not enter any amount or percentage. Please enter an allocation for at least one selected investor.");
+
+                var creatorIdForView = inventoryItem.CreatedByUserId ?? _userManager.GetUserId(User);
+                var investorsQueryForView = _userManager.Users.AsQueryable();
+                if (!string.IsNullOrEmpty(creatorIdForView))
+                {
+                    investorsQueryForView = investorsQueryForView.Where(u => u.Id != creatorIdForView);
+                }
+
+                var investorsForView = investorsQueryForView
+                    .OrderBy(u => u.Email)
+                    .ToList();
+
+                ViewBag.Investors = investorsForView;
+                return View(inventoryItem);
+            }
+        }
+
         // If any investors are selected, move the item into PendingApproval
         // so it waits for their decision; otherwise keep existing status.
         if (investorIds.Count > 0)
@@ -372,6 +462,12 @@ public class InventoryController : Controller
             return NotFound();
         }
 
+        if (item.Status == InventoryStatus.Sold)
+        {
+            TempData["ErrorMessage"] = "This vehicle has been sold. You cannot add new costs.";
+            return RedirectToAction(nameof(EditCosts), new { id = item.Id });
+        }
+
         var investorIds = item.Investments
             .Select(x => x.InvestorUserId)
             .Where(id => id != null)
@@ -437,6 +533,12 @@ public class InventoryController : Controller
         if (item == null)
         {
             return NotFound();
+        }
+
+        if (item.Status == InventoryStatus.Sold)
+        {
+            TempData["ErrorMessage"] = "This vehicle has been sold. You cannot add new costs.";
+            return RedirectToAction(nameof(EditCosts), new { id = item.Id });
         }
 
         var investment = item.Investments.FirstOrDefault(x => x.InvestorUserId == model.InvestorUserId);
@@ -575,6 +677,7 @@ public class InventoryController : Controller
 
         ViewBag.InventoryName = item.Name;
         ViewBag.InvestorNames = investors;
+        ViewBag.IsSold = item.Status == InventoryStatus.Sold;
 
         return View(costs);
     }
@@ -705,7 +808,255 @@ public class InventoryController : Controller
         return RedirectToAction(nameof(EditCosts), new { id = item.Id });
     }
 
-    [HttpPost]
+        [HttpGet]
+        public async Task<IActionResult> Sell(int id, CancellationToken cancellationToken = default)
+        {
+            var item = await _db.InventoryItems
+                .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            if (item.Status == InventoryStatus.Sold)
+            {
+                TempData["ErrorMessage"] = "This vehicle has already been marked as sold.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var vm = new InventorySaleViewModel
+            {
+                InventoryItemId = item.Id,
+                InventoryName = item.Name,
+                CurrentCost = item.CostPrice,
+                SellingPrice = item.SalePrice > 0 ? item.SalePrice : item.CostPrice
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Sell(InventorySaleViewModel model, CancellationToken cancellationToken = default)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var item = await _db.InventoryItems
+                .Include(i => i.Investments)
+                .FirstOrDefaultAsync(i => i.Id == model.InventoryItemId, cancellationToken);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            if (item.Status == InventoryStatus.Sold)
+            {
+                TempData["ErrorMessage"] = "This vehicle has already been marked as sold.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var sellingPrice = model.SellingPrice;
+            item.SalePrice = sellingPrice;
+
+            var profit = sellingPrice - item.CostPrice;
+
+            // Only distribute positive profit; if there is a loss we simply mark it sold.
+            if (profit > 0 && item.Investments.Any())
+            {
+                var approvedInvestments = item.Investments
+                    .Where(x => x.Status == InvestmentStatus.Approved)
+                    .ToList();
+
+                // If no one approved explicitly, fall back to all investments.
+                if (!approvedInvestments.Any())
+                {
+                    approvedInvestments = item.Investments.ToList();
+                }
+
+                if (approvedInvestments.Any())
+                {
+                    var totalPercentage = 0m;
+
+                    foreach (var inv in approvedInvestments)
+                    {
+                        if (!inv.Percentage.HasValue || inv.Percentage.Value <= 0)
+                        {
+                            if (item.CostPrice > 0)
+                            {
+                                inv.Percentage = Math.Round((inv.Amount / item.CostPrice) * 100m, 2);
+                            }
+                        }
+
+                        if (inv.Percentage.HasValue && inv.Percentage.Value > 0)
+                        {
+                            totalPercentage += inv.Percentage.Value;
+                        }
+                    }
+
+                    // Include creator as an investor for the remaining share of the cost.
+                    var creatorId = item.CreatedByUserId;
+                    decimal creatorPercentage = 0m;
+                    if (!string.IsNullOrEmpty(creatorId) && item.CostPrice > 0)
+                    {
+                        var totalInvestorAmount = approvedInvestments.Sum(x => x.Amount);
+                        var creatorAmount = item.CostPrice - totalInvestorAmount;
+                        if (creatorAmount > 0)
+                        {
+                            creatorPercentage = Math.Round((creatorAmount / item.CostPrice) * 100m, 2);
+                            totalPercentage += creatorPercentage;
+                        }
+                    }
+
+                    if (totalPercentage > 0)
+                    {
+                        foreach (var inv in approvedInvestments)
+                        {
+                            var pct = inv.Percentage ?? 0m;
+                            if (pct <= 0)
+                            {
+                                continue;
+                            }
+
+                            var share = Math.Round(profit * (pct / totalPercentage), 2);
+                            if (share <= 0)
+                            {
+                                continue;
+                            }
+
+                            _db.InventoryCosts.Add(new InventoryCost
+                            {
+                                InventoryItemId = item.Id,
+                                InvestorUserId = inv.InvestorUserId,
+                                Amount = share,
+                                Type = "Profit Share",
+                                Notes = $"Profit distribution for sale at {sellingPrice:N2}",
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+
+                        if (creatorPercentage > 0 && !string.IsNullOrEmpty(item.CreatedByUserId))
+                        {
+                            var creatorShare = Math.Round(profit * (creatorPercentage / totalPercentage), 2);
+                            if (creatorShare > 0)
+                            {
+                                _db.InventoryCosts.Add(new InventoryCost
+                                {
+                                    InventoryItemId = item.Id,
+                                    InvestorUserId = item.CreatedByUserId,
+                                    Amount = creatorShare,
+                                    Type = "Profit Share",
+                                    Notes = $"Creator profit share for sale at {sellingPrice:N2}",
+                                    CreatedAt = DateTime.UtcNow
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            item.Status = InventoryStatus.Sold;
+            item.IsActive = false;
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            TempData["SuccessMessage"] = "Vehicle sold and profit distributed to investors based on their allocations.";
+            return RedirectToAction(nameof(Edit), new { id = item.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Profit(int id, CancellationToken cancellationToken = default)
+        {
+            var item = await _db.InventoryItems
+                .Include(i => i.Investments)
+                .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            var profitCosts = await _db.InventoryCosts
+                .Where(c => c.InventoryItemId == id && c.Type == "Profit Share")
+                .ToListAsync(cancellationToken);
+
+            var investorIds = item.Investments
+                .Select(x => x.InvestorUserId)
+                .Distinct()
+                .ToList();
+
+            if (!string.IsNullOrEmpty(item.CreatedByUserId) && !investorIds.Contains(item.CreatedByUserId))
+            {
+                investorIds.Add(item.CreatedByUserId);
+            }
+
+            var investors = _userManager.Users
+                .Where(u => investorIds.Contains(u.Id))
+                .ToDictionary(u => u.Id, u => u.UserName ?? u.Email ?? u.Id);
+
+            var rows = new List<InventoryProfitRow>();
+            foreach (var inv in item.Investments)
+            {
+                var pct = inv.Percentage ?? 0m;
+                var totalProfitForInvestor = profitCosts
+                    .Where(c => c.InvestorUserId == inv.InvestorUserId)
+                    .Sum(c => c.Amount);
+
+                investors.TryGetValue(inv.InvestorUserId, out var name);
+
+                rows.Add(new InventoryProfitRow
+                {
+                    InvestorUserId = inv.InvestorUserId,
+                    InvestorName = name ?? inv.InvestorUserId,
+                    Percentage = pct,
+                    ProfitAmount = totalProfitForInvestor
+                });
+            }
+
+            // Add creator row as an investor for the remaining share.
+            if (!string.IsNullOrEmpty(item.CreatedByUserId))
+            {
+                var totalInvestorAmount = item.Investments.Sum(x => x.Amount);
+                var creatorAmount = item.CostPrice - totalInvestorAmount;
+                decimal creatorPercentage = 0m;
+                if (creatorAmount > 0 && item.CostPrice > 0)
+                {
+                    creatorPercentage = Math.Round((creatorAmount / item.CostPrice) * 100m, 2);
+                }
+
+                var creatorProfit = profitCosts
+                    .Where(c => c.InvestorUserId == item.CreatedByUserId)
+                    .Sum(c => c.Amount);
+
+                investors.TryGetValue(item.CreatedByUserId, out var creatorName);
+
+                rows.Add(new InventoryProfitRow
+                {
+                    InvestorUserId = item.CreatedByUserId,
+                    InvestorName = creatorName ?? item.CreatedByUserId,
+                    Percentage = creatorPercentage,
+                    ProfitAmount = creatorProfit
+                });
+            }
+
+            var model = new InventoryProfitViewModel
+            {
+                InventoryItemId = item.Id,
+                InventoryName = item.Name,
+                TotalCost = item.CostPrice,
+                SellingPrice = item.SalePrice,
+                TotalProfit = item.SalePrice - item.CostPrice,
+                Rows = rows
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {

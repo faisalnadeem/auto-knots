@@ -1,0 +1,87 @@
+@model AutoKnots.Models.InventoryProfitViewModel
+@{
+    ViewData["Title"] = "Profit Details";
+}
+
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Profit - @Model.InventoryName</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Inventory</a></li>
+            <li class="breadcrumb-item">Profit</li>
+        </ul>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card stretch stretch-full mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Summary</h5>
+                    <a asp-action="Edit" asp-route-id="@Model.InventoryItemId" class="btn btn-light-secondary">Back to Vehicle</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="fw-semibold text-muted fs-12">Total Cost</div>
+                            <div class="fs-5">@Model.TotalCost.ToString("N2")</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="fw-semibold text-muted fs-12">Selling Price</div>
+                            <div class="fs-5">@Model.SellingPrice.ToString("N2")</div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="fw-semibold text-muted fs-12">Total Profit</div>
+                            <div class="fs-5">@Model.TotalProfit.ToString("N2")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card stretch stretch-full">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Investor Profit Breakdown</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Investor</th>
+                                    <th>Investment %</th>
+                                    <th>Profit Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Rows != null && Model.Rows.Any())
+                                {
+                                    foreach (var row in Model.Rows)
+                                    {
+                                        <tr>
+                                            <td>@row.InvestorName</td>
+                                            <td>@row.Percentage.ToString("N2")%</td>
+                                            <td>@row.ProfitAmount.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">
+                                            No profit records found for this vehicle yet.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
