@@ -958,6 +958,19 @@ public class InventoryController : Controller
                     }
                 }
             }
+            else if (profit > 0 && !string.IsNullOrEmpty(item.CreatedByUserId))
+            {
+                // No investors: entire profit goes to the creator so it shows on Profits page
+                _db.InventoryCosts.Add(new InventoryCost
+                {
+                    InventoryItemId = item.Id,
+                    InvestorUserId = item.CreatedByUserId,
+                    Amount = profit,
+                    Type = "Profit Share",
+                    Notes = $"Creator profit (no other investors) for sale at {sellingPrice:N2}",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
 
             item.Status = InventoryStatus.Sold;
             item.IsActive = false;
