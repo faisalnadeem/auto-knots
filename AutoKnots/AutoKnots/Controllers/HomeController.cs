@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Diagnostics;
+using System.Security.Claims;
 using AutoKnots.Data;
 using AutoKnots.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -29,6 +30,7 @@ public class HomeController : Controller
     {
         DateTime dateFrom;
         DateTime dateTo;
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (year.HasValue && month.HasValue)
         {
@@ -77,11 +79,20 @@ public class HomeController : Controller
         if (soldWithoutProfitShare.Count > 0)
             await _db.SaveChangesAsync(cancellationToken);
 
-        var profitCosts = await _db.InventoryCosts
+        var profitCostsQuery = _db.InventoryCosts
             .Include(c => c.InventoryItem)
             .Where(c => c.Type == "Profit Share" && c.InventoryItem != null && c.InventoryItem.Status == InventoryStatus.Sold)
-            .Where(c => c.CreatedAt >= dateFrom && c.CreatedAt <= dateTo.AddDays(1))
-            .ToListAsync(cancellationToken);
+            .Where(c => c.CreatedAt >= dateFrom && c.CreatedAt <= dateTo.AddDays(1));
+
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            // Only show profits where the current user is either an investor or the creator
+            profitCostsQuery = profitCostsQuery.Where(c =>
+                c.InvestorUserId == currentUserId ||
+                (c.InventoryItem != null && c.InventoryItem.CreatedByUserId == currentUserId));
+        }
+
+        var profitCosts = await profitCostsQuery.ToListAsync(cancellationToken);
 
         var itemIds = profitCosts.Select(c => c.InventoryItemId).Distinct().ToList();
         var items = await _db.InventoryItems

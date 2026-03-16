@@ -7,6 +7,7 @@
     var fromStr = Model.DateFrom?.ToString("yyyy-MM-dd");
     var toStr = Model.DateTo?.ToString("yyyy-MM-dd");
     var years = Enumerable.Range(DateTime.UtcNow.Year - 5, 6).ToList();
+    var useCustomDate = Model.FilterYear == null && Model.FilterMonth == null && Model.DateFrom.HasValue && Model.DateTo.HasValue;
 }
 
 <!-- [ page-header ] start -->
@@ -22,40 +23,54 @@
     </div>
     <div class="page-header-right ms-auto">
         <form method="get" asp-action="Index" class="d-flex flex-wrap align-items-center gap-2" id="profits-filter-form">
-            <span class="text-muted small">Filter:</span>
-            <input type="date" name="from" class="form-control form-control-sm" style="max-width: 140px;" value="@fromStr" placeholder="From" />
-            <span class="text-muted">–</span>
-            <input type="date" name="to" class="form-control form-control-sm" style="max-width: 140px;" value="@toStr" placeholder="To" />
-            <span class="text-muted small">or</span>
-            <select name="year" class="form-select form-select-sm" style="max-width: 90px;">
-                <option value="">Year</option>
-                @foreach (var y in years)
-                {
-                    if (Model.FilterYear == y)
+            <span class="text-muted small me-1">Filter:</span>
+
+            <!-- Month / Year filter (default) -->
+            <div id="month-year-filter" class="d-flex align-items-center gap-2 flex-nowrap @(useCustomDate ? "d-none" : "")">
+                <select name="year" class="form-select form-select-sm" style="max-width: 90px;">
+                    <option value="">Year</option>
+                    @foreach (var y in years)
                     {
-                        <option value="@y" selected>@y</option>
+                        if (Model.FilterYear == y && !useCustomDate)
+                        {
+                            <option value="@y" selected>@y</option>
+                        }
+                        else
+                        {
+                            <option value="@y">@y</option>
+                        }
                     }
-                    else
+                </select>
+                <select name="month" class="form-select form-select-sm" style="max-width: 110px;">
+                    <option value="">Month</option>
+                    @for (var m = 1; m <= 12; m++)
                     {
-                        <option value="@y">@y</option>
+                        var name = new DateTime(2000, m, 1).ToString("MMMM", CultureInfo.CurrentCulture);
+                        if (Model.FilterMonth == m && !useCustomDate)
+                        {
+                            <option value="@m" selected>@name</option>
+                        }
+                        else
+                        {
+                            <option value="@m">@name</option>
+                        }
                     }
-                }
-            </select>
-            <select name="month" class="form-select form-select-sm" style="max-width: 100px;">
-                <option value="">Month</option>
-                @for (var m = 1; m <= 12; m++)
-                {
-                    var name = new DateTime(2000, m, 1).ToString("MMMM", CultureInfo.CurrentCulture);
-                    if (Model.FilterMonth == m)
-                    {
-                        <option value="@m" selected>@name</option>
-                    }
-                    else
-                    {
-                        <option value="@m">@name</option>
-                    }
-                }
-            </select>
+                </select>
+            </div>
+
+            <!-- Custom date range filter (hidden by default) -->
+            <div id="custom-date-filter" class="d-flex align-items-center gap-2 flex-nowrap @(useCustomDate ? "" : "d-none")">
+                <input type="date" name="from" class="form-control form-control-sm" style="max-width: 140px;" value="@fromStr" placeholder="From" />
+                <span class="text-muted">–</span>
+                <input type="date" name="to" class="form-control form-control-sm" style="max-width: 140px;" value="@toStr" placeholder="To" />
+            </div>
+
+            <button type="button"
+                    id="toggle-filter-mode"
+                    class="btn btn-sm btn-outline-primary">
+                @(useCustomDate ? "By month & year" : "Custom date")
+            </button>
+
             <button type="submit" class="btn btn-sm btn-primary">Apply</button>
             <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Reset</a>
         </form>
@@ -227,6 +242,42 @@
     };
     var chart = new ApexCharts(document.querySelector('#profits-by-month-chart'), options);
     chart.render();
+})();
+
+(function () {
+    var useCustom = @((useCustomDate ? "true" : "false").ToLower());
+    var monthYearGroup = document.getElementById('month-year-filter');
+    var customGroup = document.getElementById('custom-date-filter');
+    var toggleBtn = document.getElementById('toggle-filter-mode');
+    if (!monthYearGroup || !customGroup || !toggleBtn) {
+        return;
+    }
+
+    function setMode(custom) {
+        if (custom) {
+            monthYearGroup.classList.add('d-none');
+            customGroup.classList.remove('d-none');
+            toggleBtn.textContent = 'By month & year';
+            // Disable month/year inputs so only dates are submitted
+            monthYearGroup.querySelectorAll('select').forEach(function (el) { el.disabled = true; });
+            customGroup.querySelectorAll('input').forEach(function (el) { el.disabled = false; });
+        } else {
+            customGroup.classList.add('d-none');
+            monthYearGroup.classList.remove('d-none');
+            toggleBtn.textContent = 'Custom date';
+            // Disable custom date inputs so only month/year are submitted
+            customGroup.querySelectorAll('input').forEach(function (el) { el.disabled = true; });
+            monthYearGroup.querySelectorAll('select').forEach(function (el) { el.disabled = false; });
+        }
+    }
+
+    // Initial mode
+    setMode(useCustom);
+
+    toggleBtn.addEventListener('click', function () {
+        useCustom = !useCustom;
+        setMode(useCustom);
+    });
 })();
 </script>
 }
