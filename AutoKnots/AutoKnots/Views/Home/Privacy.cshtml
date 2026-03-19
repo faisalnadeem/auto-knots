@@ -1,6 +1,328 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    .privacy-hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e6e8ef;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #0ea5e9 100%);
+        color: #fff;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2);
+    }
+
+    .privacy-hero::after {
+        content: "";
+        position: absolute;
+        top: -40px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .privacy-hero .policy-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.16);
+        font-size: 1.5rem;
+    }
+
+    .privacy-intro {
+        position: relative;
+        z-index: 1;
+    }
+
+    .policy-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    @@media (min-width: 992px) {
+        .policy-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .policy-grid .policy-card:nth-child(3n + 1) {
+            grid-column: 1 / -1;
+        }
+
+        .policy-grid .policy-card-contact {
+            grid-column: 1 / -1;
+        }
+    }
+
+    .policy-card {
+        height: 100%;
+        border: 1px solid #e9edf5;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .policy-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .policy-card .policy-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .policy-card .policy-head i {
+        font-size: 1.1rem;
+    }
+
+    .policy-muted {
+        color: #5f6b7a;
+    }
+
+    .contact-help-btn {
+        margin-top: 12px;
+        width: auto !important;
+        display: inline-block !important;
+        border-radius: 999px !important;
+        padding: 9px 20px;
+        font-size: 0.9rem;
+    }
+
+    .contact-help-wrap {
+        margin-top: 8px;
+        text-align: center;
+    }
+</style>
+
+<!-- [ page-header ] start -->
+<div class="page-header">
+    <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+            <h5 class="m-b-10">Privacy Policy</h5>
+        </div>
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item">Privacy Policy</li>
+        </ul>
+    </div>
+    <div class="page-header-right ms-auto"></div>
+</div>
+<!-- [ page-header ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="main-content">
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="privacy-hero p-4 p-md-5">
+                <div class="privacy-intro">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="policy-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-2 text-white">Privacy at Auto Knots</h3>
+                            <p class="mb-2 fs-13 text-white">
+                                Auto Knots is committed to protecting your privacy and ensuring that your personal and financial data is handled responsibly.
+                            </p>
+                            <p class="mb-2 fs-13 text-white">
+                                This Privacy Policy explains how we collect, use, store, and protect your information when you use the Auto Knots platform.
+                            </p>
+                            <p class="mb-0 fs-13 text-white">
+                                By using Auto Knots, you agree to the practices described in this policy.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="policy-grid">
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-clipboard-data text-dark"></i>
+                        <h5 class="mb-0">Information We Collect</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-3">We collect information to provide and improve our services.</p>
+                    <p class="mb-1 fs-13"><strong>Personal Information</strong></p>
+                    <ul class="ps-3 mb-3 fs-13 policy-muted">
+                        <li>Name</li>
+                        <li>Email address</li>
+                        <li>Account-related details</li>
+                    </ul>
+                    <p class="mb-1 fs-13"><strong>Vehicle and Financial Data</strong></p>
+                    <ul class="ps-3 mb-3 fs-13 policy-muted">
+                        <li>Vehicle details (make, model, variant, engine number, etc.)</li>
+                        <li>Cost price and additional expenses</li>
+                        <li>Investment amounts and investor details</li>
+                        <li>Selling price and profit calculations</li>
+                    </ul>
+                    <p class="mb-1 fs-13"><strong>Usage Data</strong></p>
+                    <ul class="ps-3 mb-2 fs-13 policy-muted">
+                        <li>Pages visited</li>
+                        <li>Actions performed within the system</li>
+                        <li>Timestamps of activities</li>
+                    </ul>
+                    <p class="mb-0 fs-13 policy-muted">This helps us improve system performance and user experience.</p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-gear-wide-connected text-dark"></i>
+                        <h5 class="mb-0">How We Use Your Information</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-2">Your data is used strictly for platform functionality and improvement.</p>
+                    <p class="mb-2 fs-13 policy-muted">We use your information to:</p>
+                    <ul class="ps-3 mb-3 fs-13 policy-muted">
+                        <li>Manage vehicle inventory and records</li>
+                        <li>Track investments and investor participation</li>
+                        <li>Calculate and display profit distributions</li>
+                        <li>Provide dashboards and analytics</li>
+                        <li>Improve system performance and features</li>
+                    </ul>
+                    <div class="alert alert-soft-info-message mb-0 fs-13">
+                        We do not sell or rent your personal data to third parties.
+                    </div>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-people text-dark"></i>
+                        <h5 class="mb-0">Data Sharing and Visibility</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-2">Auto Knots maintains controlled data visibility:</p>
+                    <ul class="ps-3 mb-2 fs-13 policy-muted">
+                        <li>You can only view vehicles where you are involved (as owner or investor)</li>
+                        <li>Your investment details are visible only to relevant participants in that vehicle</li>
+                        <li>Other users cannot access your unrelated data</li>
+                    </ul>
+                    <p class="mb-0 fs-13 policy-muted">We do not share your data with external parties, except where required by law.</p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-shield-check text-dark"></i>
+                        <h5 class="mb-0">Data Storage and Security</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-2">We take reasonable measures to protect your data:</p>
+                    <ul class="ps-3 mb-3 fs-13 policy-muted">
+                        <li>Secure storage of user and financial data</li>
+                        <li>Controlled access to sensitive information</li>
+                        <li>Protection against unauthorized access</li>
+                    </ul>
+                    <p class="mb-0 fs-13 policy-muted">
+                        However, no system is completely secure. Users are responsible for maintaining the confidentiality of their account credentials.
+                    </p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-cash-coin text-dark"></i>
+                        <h5 class="mb-0">Financial Data Disclaimer</h5>
+                    </div>
+                    <p class="mb-1 fs-13 policy-muted">Auto Knots:</p>
+                    <ul class="ps-3 mb-0 fs-13 policy-muted">
+                        <li>Does not process real financial transactions</li>
+                        <li>Does not store banking or payment information</li>
+                        <li>Only records investment and profit data for tracking purposes</li>
+                    </ul>
+                    <p class="mt-2 mb-0 fs-13 policy-muted">All financial dealings between users occur outside the platform.</p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-check2-square text-dark"></i>
+                        <h5 class="mb-0">Data Accuracy</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-2">The system relies on user-provided data.</p>
+                    <p class="mb-2 fs-13 policy-muted">Users are responsible for:</p>
+                    <ul class="ps-3 mb-0 fs-13 policy-muted">
+                        <li>Entering accurate information</li>
+                        <li>Reviewing data before finalizing actions (such as selling a vehicle)</li>
+                    </ul>
+                    <p class="mt-2 mb-0 fs-13 policy-muted">Incorrect data may result in inaccurate profit calculations.</p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-clock-history text-dark"></i>
+                        <h5 class="mb-0">Data Retention</h5>
+                    </div>
+                    <p class="fs-13 policy-muted mb-2">
+                        We retain your data for as long as your account is active or as needed to provide services.
+                    </p>
+                    <p class="mb-2 fs-13 policy-muted">We may retain certain information for:</p>
+                    <ul class="ps-3 mb-0 fs-13 policy-muted">
+                        <li>Legal compliance</li>
+                        <li>Record-keeping</li>
+                        <li>System improvements</li>
+                    </ul>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-person-badge text-dark"></i>
+                        <h5 class="mb-0">Your Rights</h5>
+                    </div>
+                    <p class="mb-2 fs-13 policy-muted">As a user, you have the right to:</p>
+                    <ul class="ps-3 mb-0 fs-13 policy-muted">
+                        <li>Access your data</li>
+                        <li>Update or correct your information</li>
+                        <li>Request deletion of your account (subject to system constraints)</li>
+                    </ul>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-cookie text-dark"></i>
+                        <h5 class="mb-0">Cookies and Tracking</h5>
+                    </div>
+                    <p class="mb-2 fs-13 policy-muted">Auto Knots may use basic cookies or similar technologies to:</p>
+                    <ul class="ps-3 mb-2 fs-13 policy-muted">
+                        <li>Maintain session login</li>
+                        <li>Improve user experience</li>
+                    </ul>
+                    <p class="mb-0 fs-13 policy-muted">We do not use intrusive tracking or third-party advertising cookies.</p>
+                </div>
+
+                <div class="policy-card p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-arrow-repeat text-dark"></i>
+                        <h5 class="mb-0">Changes to Privacy Policy</h5>
+                    </div>
+                    <p class="mb-0 fs-13 policy-muted">
+                        We may update this Privacy Policy from time to time. Users are encouraged to review it periodically.
+                        Continued use of the platform means you accept any updates.
+                    </p>
+                </div>
+
+                <div class="policy-card policy-card-contact p-4">
+                    <div class="policy-head">
+                        <i class="bi bi-chat-dots text-dark"></i>
+                        <h5 class="mb-0">Contact</h5>
+                    </div>
+                    <p class="mb-0 fs-13 policy-muted">
+                        If you have any questions or concerns regarding this Privacy Policy, you may contact the Auto Knots team through the platform.
+                        You can also refer to the Contact Support page from the application navigation for additional guidance.
+                    </p>
+                    <div class="contact-help-wrap">
+                        <a href="@Url.Action("Help", "Home")" class="btn btn-dark btn-sm contact-help-btn">
+                            Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Main Content ] end -->
