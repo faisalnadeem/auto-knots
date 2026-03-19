@@ -166,6 +166,7 @@ public class HomeController : Controller
         return View(model);
     }
 
+    [AllowAnonymous]
     public IActionResult Privacy()
     {
         return View();
@@ -175,6 +176,31 @@ public class HomeController : Controller
     public IActionResult Terms()
     {
         return View();
+    }
+
+    [AllowAnonymous]
+    public IActionResult Help()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public IActionResult Help(string fullName, string email, string subject, string message)
+    {
+        if (string.IsNullOrWhiteSpace(fullName) ||
+            string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(subject) ||
+            string.IsNullOrWhiteSpace(message))
+        {
+            TempData["SupportError"] = "Please complete all fields before submitting.";
+            return View();
+        }
+
+        // Placeholder flow until email integration is added.
+        TempData["SupportSuccess"] = "Your message has been submitted. Our team will contact you soon.";
+        return RedirectToAction(nameof(Help));
     }
 
     [AllowAnonymous]
