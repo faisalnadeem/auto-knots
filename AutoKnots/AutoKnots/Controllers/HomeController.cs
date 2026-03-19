@@ -172,6 +172,12 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
+    public IActionResult Terms()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
