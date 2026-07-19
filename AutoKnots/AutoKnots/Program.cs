@@ -75,6 +75,7 @@ builder.Services.AddScoped<IInventoryApprovalService, InventoryApprovalService>(
 builder.Services.AddScoped<IInventoryOperationsService, InventoryOperationsService>();
 builder.Services.AddScoped<IProfitsService, ProfitsService>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
