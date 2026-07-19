@@ -1,0 +1,27 @@
+@model AutoKnots.Models.MarketplaceListingForm
+@using AutoKnots.Models
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<input asp-for="Id" type="hidden" />
+<div class="row g-3">
+    <div class="col-md-6">
+        <label asp-for="InventoryItemId" class="form-label">Inventory vehicle</label>
+        <select asp-for="InventoryItemId" class="form-select">
+            <option value="">Select a vehicle</option>
+            @foreach (var item in ViewBag.InventoryItems) { <option value="@item.Id">@item.Label</option> }
+        </select>
+        <span asp-validation-for="InventoryItemId" class="text-danger"></span>
+    </div>
+    <div class="col-md-6"><label asp-for="Title" class="form-label"></label><input asp-for="Title" class="form-control" /><span asp-validation-for="Title" class="text-danger"></span></div>
+    <div class="col-12"><label asp-for="Description" class="form-label"></label><textarea asp-for="Description" rows="5" class="form-control"></textarea><span asp-validation-for="Description" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Price" class="form-label"></label><input asp-for="Price" class="form-control" /><span asp-validation-for="Price" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Year" class="form-label"></label><input asp-for="Year" class="form-control" /><span asp-validation-for="Year" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Mileage" class="form-label"></label><input asp-for="Mileage" class="form-control" /><span asp-validation-for="Mileage" class="text-danger"></span></div>
+    <div class="col-md-3"><label asp-for="FuelType" class="form-label">Fuel</label><select asp-for="FuelType" asp-items="Html.GetEnumSelectList<FuelType>()" class="form-select"></select></div>
+    <div class="col-md-3"><label asp-for="Transmission" class="form-label"></label><select asp-for="Transmission" asp-items="Html.GetEnumSelectList<TransmissionType>()" class="form-select"></select></div>
+    <div class="col-md-3"><label asp-for="BodyStyle" class="form-label">Body style</label><select asp-for="BodyStyle" asp-items="Html.GetEnumSelectList<BodyStyle>()" class="form-select"></select></div>
+    <div class="col-md-3"><label asp-for="Condition" class="form-label"></label><select asp-for="Condition" asp-items="Html.GetEnumSelectList<VehicleCondition>()" class="form-select"></select></div>
+    <div class="col-md-6"><label asp-for="Location" class="form-label"></label><input asp-for="Location" class="form-control" /><span asp-validation-for="Location" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="ImageUrls" class="form-label">Image URLs (one per line)</label><textarea asp-for="ImageUrls" rows="3" class="form-control"></textarea></div>
+    <div class="col-12"><div class="form-check"><input asp-for="Publish" class="form-check-input" /><label asp-for="Publish" class="form-check-label">Publish immediately</label></div></div>
+</div>
+<div class="mt-4 d-flex gap-2"><button type="submit" class="btn btn-primary">Save listing</button><a asp-action="Mine" class="btn btn-outline-secondary">Cancel</a></div>

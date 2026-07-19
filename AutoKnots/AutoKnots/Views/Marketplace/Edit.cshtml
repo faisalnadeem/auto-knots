@@ -1,0 +1,5 @@
+@model AutoKnots.Models.MarketplaceListingForm
+@{ ViewData["Title"] = "Edit Listing"; }
+<div class="page-header"><div class="page-header-left"><div class="page-header-title"><h5>Edit Listing</h5></div></div></div>
+<div class="main-content"><div class="card"><div class="card-body"><form method="post" asp-route-id="@Model.Id">@Html.AntiForgeryToken()<partial name="_ListingForm" model="Model" /></form></div></div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,22 @@
+@model AutoKnots.Models.MarketplacePage
+@using AutoKnots.Models
+@{ ViewData["Title"] = "Marketplace"; var search = (MarketplaceSearch)ViewBag.Search; }
+<div class="page-header"><div class="page-header-left"><div class="page-header-title"><h5>Vehicle Marketplace</h5></div></div><div class="page-header-right ms-auto"><a asp-action="Mine" class="btn btn-outline-primary me-2">My listings</a><a asp-action="Create" class="btn btn-primary">List a vehicle</a></div></div>
+<div class="main-content">
+<div class="card mb-4"><div class="card-body"><form method="get" class="row g-2">
+<div class="col-md-3"><input name="Search" value="@search.Search" class="form-control" placeholder="Search vehicles" /></div>
+<div class="col-md-2"><input name="Make" value="@search.Make" class="form-control" placeholder="Make" /></div>
+<div class="col-md-2"><input name="Model" value="@search.Model" class="form-control" placeholder="Model" /></div>
+<div class="col-md-2"><input name="Location" value="@search.Location" class="form-control" placeholder="Location" /></div>
+<div class="col-md-2"><select name="Sort" class="form-select"><option value="newest">Newest</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option><option value="mileage_asc">Lowest mileage</option><option value="year_desc">Newest year</option></select></div>
+<div class="col-md-1"><button class="btn btn-primary w-100">Search</button></div>
+<div class="col-md-2"><input name="MinPrice" value="@search.MinPrice" class="form-control" placeholder="Min price" /></div><div class="col-md-2"><input name="MaxPrice" value="@search.MaxPrice" class="form-control" placeholder="Max price" /></div>
+<div class="col-md-2"><input name="MinYear" value="@search.MinYear" class="form-control" placeholder="Min year" /></div><div class="col-md-2"><input name="MaxYear" value="@search.MaxYear" class="form-control" placeholder="Max year" /></div><div class="col-md-2"><input name="MaxMileage" value="@search.MaxMileage" class="form-control" placeholder="Max mileage" /></div>
+<div class="col-md-3"><select name="FuelType" class="form-select"><option value="">Any fuel type</option>@foreach(var value in Enum.GetValues<FuelType>()){<option value="@value">@value</option>}</select></div>
+<div class="col-md-3"><select name="Transmission" class="form-select"><option value="">Any transmission</option>@foreach(var value in Enum.GetValues<TransmissionType>()){<option value="@value">@value</option>}</select></div>
+<div class="col-md-3"><select name="BodyStyle" class="form-select"><option value="">Any body style</option>@foreach(var value in Enum.GetValues<BodyStyle>()){<option value="@value">@value</option>}</select></div>
+<div class="col-md-3"><select name="Condition" class="form-select"><option value="">Any condition</option>@foreach(var value in Enum.GetValues<VehicleCondition>()){<option value="@value">@value</option>}</select></div>
+</form></div></div>
+<div class="row g-4">@foreach (var item in Model.Items) { <div class="col-md-6 col-xl-4"><div class="card h-100">@if(item.PrimaryImageUrl != null){<img src="@item.PrimaryImageUrl" alt="@item.Title" class="card-img-top" style="height:220px;object-fit:cover" />}<div class="card-body"><h5>@item.Title</h5><div class="text-muted">@item.Year @item.Make @item.Model</div><h4 class="text-primary mt-3">@item.Price.ToString("C")</h4><div class="small">@item.Mileage.ToString("N0") miles · @item.FuelType · @item.Transmission</div><div class="small text-muted mt-2"><i class="feather-map-pin"></i> @item.Location</div><a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary w-100 mt-3">View vehicle</a></div></div></div> }</div>
+@if (!Model.Items.Any()) { <div class="card"><div class="card-body text-center text-muted py-5">No listings match your search.</div></div> }
+</div>

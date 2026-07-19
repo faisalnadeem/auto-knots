@@ -105,3 +105,56 @@ public class ListingStatusInput
     [EnumDataType(typeof(ListingStatus))]
     public ListingStatus Status { get; set; }
 }
+
+public class MarketplaceListingForm
+{
+    public int? Id { get; set; }
+
+    [Required]
+    public int InventoryItemId { get; set; }
+
+    [Required, MaxLength(160)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required, MaxLength(4000)]
+    public string Description { get; set; } = string.Empty;
+
+    [Range(0.01, double.MaxValue)]
+    public decimal Price { get; set; }
+
+    [Range(1886, 2100)]
+    public int Year { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int Mileage { get; set; }
+
+    public FuelType FuelType { get; set; }
+    public TransmissionType Transmission { get; set; }
+    public BodyStyle BodyStyle { get; set; }
+    public VehicleCondition Condition { get; set; }
+
+    [Required, MaxLength(160)]
+    public string Location { get; set; } = string.Empty;
+
+    public bool Publish { get; set; }
+    public string? ImageUrls { get; set; }
+
+    public MarketplaceListingInput ToInput() => new()
+    {
+        InventoryItemId = InventoryItemId,
+        Title = Title,
+        Description = Description,
+        Price = Price,
+        Year = Year,
+        Mileage = Mileage,
+        FuelType = FuelType,
+        Transmission = Transmission,
+        BodyStyle = BodyStyle,
+        Condition = Condition,
+        Location = Location,
+        Publish = Publish,
+        ImageUrls = (ImageUrls ?? string.Empty)
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList()
+    };
+}
