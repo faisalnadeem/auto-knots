@@ -15,6 +15,7 @@ public class InventoryController : Controller
     private readonly IInventoryService _inventoryService;
     private readonly ApplicationDbContext _db;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly IInventoryAuthorizationService _authorizationService;
 
     private static void RecalculateInvestmentPercentages(InventoryItem item)
     {
@@ -39,11 +40,12 @@ public class InventoryController : Controller
         }
     }
 
-    public InventoryController(IInventoryService inventoryService, ApplicationDbContext db, UserManager<IdentityUser> userManager)
+    public InventoryController(IInventoryService inventoryService, ApplicationDbContext db, UserManager<IdentityUser> userManager, IInventoryAuthorizationService authorizationService)
     {
         _inventoryService = inventoryService;
         _db = db;
         _userManager = userManager;
+        _authorizationService = authorizationService;
     }
 
     public async Task<IActionResult> Index(string? search, int page = 1, CancellationToken cancellationToken = default)
@@ -272,6 +274,7 @@ public class InventoryController : Controller
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
@@ -302,6 +305,8 @@ public class InventoryController : Controller
         {
             inventoryItem.Id = id;
         }
+
+        if (!await CanManageAsync(inventoryItem.Id, cancellationToken)) return NotFound();
 
         inventoryItem.Name = form["Name"]!;
         inventoryItem.Make = form["Make"]!;
@@ -453,6 +458,7 @@ public class InventoryController : Controller
     [HttpGet]
     public async Task<IActionResult> AddCost(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _db.InventoryItems
             .Include(i => i.Investments)
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -500,6 +506,7 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AddCost(InventoryCostFormViewModel model, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(model.InventoryItemId, cancellationToken)) return NotFound();
         if (!ModelState.IsValid)
         {
             var itemForView = await _db.InventoryItems
@@ -600,6 +607,7 @@ public class InventoryController : Controller
     [HttpGet]
     public async Task<IActionResult> EditCosts(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _db.InventoryItems
             .Include(i => i.Investments)
             .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -693,6 +701,8 @@ public class InventoryController : Controller
             return NotFound();
         }
 
+        if (!await CanManageAsync(cost.InventoryItemId, cancellationToken)) return NotFound();
+
         var item = await _db.InventoryItems
             .Include(i => i.Investments)
             .FirstOrDefaultAsync(i => i.Id == cost.InventoryItemId, cancellationToken);
@@ -733,6 +743,13 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditCost(InventoryCostFormViewModel model, CancellationToken cancellationToken = default)
     {
+        var targetCost = await _db.InventoryCosts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == model.Id, cancellationToken);
+        if (targetCost == null || targetCost.InventoryItemId != model.InventoryItemId ||
+            !await CanManageAsync(targetCost.InventoryItemId, cancellationToken))
+            return NotFound();
+
         if (!ModelState.IsValid)
         {
             var itemForView = await _db.InventoryItems
@@ -811,6 +828,7 @@ public class InventoryController : Controller
         [HttpGet]
         public async Task<IActionResult> Sell(int id, CancellationToken cancellationToken = default)
         {
+            if (!await CanManageAsync(id, cancellationToken)) return NotFound();
             var item = await _db.InventoryItems
                 .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
 
@@ -840,6 +858,7 @@ public class InventoryController : Controller
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Sell(InventorySaleViewModel model, CancellationToken cancellationToken = default)
         {
+            if (!await CanManageAsync(model.InventoryItemId, cancellationToken)) return NotFound();
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -984,6 +1003,7 @@ public class InventoryController : Controller
         [HttpGet]
         public async Task<IActionResult> Profit(int id, CancellationToken cancellationToken = default)
         {
+            if (!await CanViewAsync(id, cancellationToken)) return NotFound();
             var item = await _db.InventoryItems
                 .Include(i => i.Investments)
                 .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -1073,9 +1093,22 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var result = await _inventoryService.DeleteAsync(id, cancellationToken);
         if (!result.Success)
             return NotFound();
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<bool> CanViewAsync(int id, CancellationToken cancellationToken)
+    {
+        var userId = _userManager.GetUserId(User);
+        return !string.IsNullOrEmpty(userId) && await _authorizationService.CanViewAsync(id, userId, cancellationToken);
+    }
+
+    private async Task<bool> CanManageAsync(int id, CancellationToken cancellationToken)
+    {
+        var userId = _userManager.GetUserId(User);
+        return !string.IsNullOrEmpty(userId) && await _authorizationService.CanManageAsync(id, userId, cancellationToken);
     }
 }
