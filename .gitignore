@@ -3,6 +3,6 @@
 ################################################################################
 
 /AutoKnots/.vs/
-/AutoKnots/AutoKnots/bin/Debug/net8.0
-/AutoKnots/AutoKnots/obj
+**/bin/
+**/obj/
 /AutoKnots/AutoKnots/Properties
