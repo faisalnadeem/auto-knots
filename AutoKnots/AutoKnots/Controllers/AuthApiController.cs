@@ -69,7 +69,7 @@ public class AuthApiController : ControllerBase
         if (user == null)
             return Unauthorized(new ApiErrorResponse { Error = "Invalid email or password." });
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
             return Unauthorized(new ApiErrorResponse { Error = "Invalid email or password." });
 

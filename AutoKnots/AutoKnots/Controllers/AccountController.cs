@@ -30,7 +30,7 @@ namespace AutoKnots.Controllers
             {
                 return Redirect($"/auth-login-cover.html?error=1&returnUrl={Uri.EscapeDataString(returnUrl)}");
             }
-            var result = await _signInManager.PasswordSignInAsync(user.UserName!, password, rememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(user.UserName!, password, rememberMe, lockoutOnFailure: true);
             if (!result.Succeeded)
             {
                 return Redirect($"/auth-login-cover.html?error=1&returnUrl={Uri.EscapeDataString(returnUrl)}");
@@ -69,7 +69,9 @@ namespace AutoKnots.Controllers
         public async Task<IActionResult> Logout(string? returnUrl = null)
         {
             await _signInManager.SignOutAsync();
-            return Redirect(returnUrl ?? "/auth-login-cover.html");
+            return string.IsNullOrEmpty(returnUrl)
+                ? Redirect("/auth-login-cover.html")
+                : LocalRedirect(returnUrl);
         }
     }
 }
