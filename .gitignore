@@ -2,7 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/AutoKnots/.vs/AutoKnots
+/AutoKnots/.vs/
 /AutoKnots/AutoKnots/bin/Debug/net8.0
 /AutoKnots/AutoKnots/obj
 /AutoKnots/AutoKnots/Properties
