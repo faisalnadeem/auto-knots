@@ -16,11 +16,13 @@ public class InventoryApiController : ControllerBase
 {
     private readonly IInventoryService _inventoryService;
     private readonly IInventoryOperationsService _operationsService;
+    private readonly IInventoryAuthorizationService _authorizationService;
 
-    public InventoryApiController(IInventoryService inventoryService, IInventoryOperationsService operationsService)
+    public InventoryApiController(IInventoryService inventoryService, IInventoryOperationsService operationsService, IInventoryAuthorizationService authorizationService)
     {
         _inventoryService = inventoryService;
         _operationsService = operationsService;
+        _authorizationService = authorizationService;
     }
 
     /// <summary>Get paginated inventory list with optional search (scoped to current user).</summary>
@@ -43,6 +45,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryItem>> GetById(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanViewAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
@@ -73,6 +76,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryItem>> Update(int id, [FromBody] UpdateInventoryRequest request, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var existing = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (existing == null)
             return NotFound();
@@ -94,6 +98,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var result = await _inventoryService.DeleteAsync(id, cancellationToken);
         if (!result.Success)
             return NotFound();
@@ -107,6 +112,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IList<InventoryCost>>> GetCosts(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanViewAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
@@ -122,6 +128,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryCost>> AddCost(int id, [FromBody] AddCostRequest request, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
@@ -140,11 +147,12 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryCost>> UpdateCost(int id, int costId, [FromBody] UpdateCostRequest request, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
 
-        var (success, error, cost) = await _operationsService.UpdateCostAsync(costId, request, cancellationToken);
+        var (success, error, cost) = await _operationsService.UpdateCostAsync(id, costId, request, cancellationToken);
         if (!success)
             return cost == null ? NotFound() : BadRequest(new ApiErrorResponse { Error = error ?? "Failed to update cost." });
 
@@ -158,6 +166,7 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Sell(int id, [FromBody] SellVehicleRequest request, CancellationToken cancellationToken = default)
     {
+        if (!await CanManageAsync(id, cancellationToken)) return NotFound();
         var item = await _inventoryService.GetByIdAsync(id, cancellationToken);
         if (item == null)
             return NotFound();
@@ -175,11 +184,24 @@ public class InventoryApiController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<InventoryProfitViewModel>> GetProfitDetail(int id, CancellationToken cancellationToken = default)
     {
+        if (!await CanViewAsync(id, cancellationToken)) return NotFound();
         var model = await _operationsService.GetProfitDetailAsync(id, cancellationToken);
         if (model == null)
             return NotFound();
 
         return Ok(model);
+    }
+
+    private async Task<bool> CanViewAsync(int id, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return !string.IsNullOrEmpty(userId) && await _authorizationService.CanViewAsync(id, userId, cancellationToken);
+    }
+
+    private async Task<bool> CanManageAsync(int id, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return !string.IsNullOrEmpty(userId) && await _authorizationService.CanManageAsync(id, userId, cancellationToken);
     }
 
     private static InventoryItem MapToInventoryItem(CreateInventoryRequest request) => new()

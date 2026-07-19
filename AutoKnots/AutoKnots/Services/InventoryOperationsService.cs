@@ -172,11 +172,14 @@ public class InventoryOperationsService : IInventoryOperationsService
     }
 
     public async Task<(bool Success, string? Error, InventoryCost? Cost)> UpdateCostAsync(
+        int inventoryItemId,
         int costId,
         UpdateCostRequest request,
         CancellationToken cancellationToken = default)
     {
-        var cost = await _db.InventoryCosts.FirstOrDefaultAsync(c => c.Id == costId, cancellationToken);
+        var cost = await _db.InventoryCosts.FirstOrDefaultAsync(
+            c => c.Id == costId && c.InventoryItemId == inventoryItemId,
+            cancellationToken);
         if (cost == null)
             return (false, "Cost entry not found.", null);
 

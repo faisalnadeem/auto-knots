@@ -70,6 +70,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IInventoryAuthorizationService, InventoryAuthorizationService>();
 builder.Services.AddScoped<IInventoryApprovalService, InventoryApprovalService>();
 builder.Services.AddScoped<IInventoryOperationsService, InventoryOperationsService>();
 builder.Services.AddScoped<IProfitsService, ProfitsService>();
