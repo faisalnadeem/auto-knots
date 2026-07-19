@@ -63,5 +63,7 @@ public class InventoryItem
     /// Investor allocations and approval decisions for this inventory item.
     /// </summary>
     public ICollection<InventoryInvestment> Investments { get; set; } = new List<InventoryInvestment>();
+
+    public VehicleListing? Listing { get; set; }
 }
 
