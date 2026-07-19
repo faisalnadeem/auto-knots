@@ -99,3 +99,9 @@ public class MarketplaceResult<T>
     public string? Error { get; set; }
     public T? Value { get; set; }
 }
+
+public class ListingStatusInput
+{
+    [EnumDataType(typeof(ListingStatus))]
+    public ListingStatus Status { get; set; }
+}
