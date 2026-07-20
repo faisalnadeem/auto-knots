@@ -22,6 +22,12 @@
     <div class="col-md-3"><label asp-for="Condition" class="form-label"></label><select asp-for="Condition" asp-items="Html.GetEnumSelectList<VehicleCondition>()" class="form-select"></select></div>
     <div class="col-md-6"><label asp-for="Location" class="form-label"></label><input asp-for="Location" class="form-control" /><span asp-validation-for="Location" class="text-danger"></span></div>
     <div class="col-md-6"><label asp-for="ImageUrls" class="form-label">Image URLs (one per line)</label><textarea asp-for="ImageUrls" rows="3" class="form-control"></textarea></div>
+    <div class="col-12"><label asp-for="Features" class="form-label">Features (separate with semicolons)</label><textarea asp-for="Features" rows="2" class="form-control" placeholder="Cruise control; Heated seats; Parking sensors"></textarea><span asp-validation-for="Features" class="text-danger"></span></div>
+    <div class="col-12"><label asp-for="VehicleHistory" class="form-label">Public vehicle history</label><textarea asp-for="VehicleHistory" rows="3" class="form-control"></textarea><span asp-validation-for="VehicleHistory" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="InspectionStatus" class="form-label">Inspection status</label><select asp-for="InspectionStatus" asp-items="Html.GetEnumSelectList<InspectionStatus>()" class="form-select"></select></div>
+    <div class="col-md-8"><label asp-for="InspectionSummary" class="form-label">Public inspection summary</label><textarea asp-for="InspectionSummary" rows="2" class="form-control"></textarea><span asp-validation-for="InspectionSummary" class="text-danger"></span></div>
+    <div class="col-md-6"><label asp-for="ExpiresAt" class="form-label">Listing expiry (optional)</label><input asp-for="ExpiresAt" type="datetime-local" class="form-control" /></div>
+    <div class="col-md-6 d-flex align-items-end"><div class="form-check mb-2"><input asp-for="ShowSellerName" class="form-check-input" /><label asp-for="ShowSellerName" class="form-check-label">Show my display name publicly</label></div></div>
     <div class="col-12"><div class="form-check"><input asp-for="Publish" class="form-check-input" /><label asp-for="Publish" class="form-check-label">Publish immediately</label></div></div>
 </div>
 <div class="mt-4 d-flex gap-2"><button type="submit" class="btn btn-primary">Save listing</button><a asp-action="Mine" class="btn btn-outline-secondary">Cancel</a></div>

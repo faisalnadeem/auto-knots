@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /marketplace
+Allow: /cars
+Disallow: /Inventory
+Disallow: /Investments
+Disallow: /Marketplace/Mine
+Disallow: /api/
+
+Sitemap: /sitemap.xml

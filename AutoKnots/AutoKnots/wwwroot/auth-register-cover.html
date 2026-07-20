@@ -53,6 +53,7 @@
                     <h2 class="fs-20 fw-bolder mb-4">Register</h2>
                     <h4 class="fs-13 fw-bold mb-2">Manage all your AutoKnots inventory</h4>
                     <form action="/Account/Register" method="post" class="w-100 mt-4 pt-2">
+                        <input type="hidden" name="returnUrl" id="returnUrl" value="">
                         <div class="mb-4">
                             <input type="text" class="form-control" name="fullName" placeholder="Full Name">
                         </div>
@@ -85,6 +86,12 @@
                             <button type="submit" class="btn btn-lg btn-primary w-100">Create Account</button>
                         </div>
                     </form>
+                    <script>
+                        (function() {
+                            var m = window.location.search.match(/[?&]returnUrl=([^&]+)/i);
+                            if (m) document.getElementById('returnUrl').value = decodeURIComponent(m[1]);
+                        })();
+                    </script>
                     <div class="mt-5 text-muted">
                         <span>Already have an account?</span>
                         <a href="auth-login-cover.html" class="fw-bold">Login</a>

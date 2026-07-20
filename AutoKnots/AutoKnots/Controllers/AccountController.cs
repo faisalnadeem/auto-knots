@@ -21,6 +21,7 @@ namespace AutoKnots.Controllers
         public async Task<IActionResult> Login(string email, string password, bool rememberMe, string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
+            if (!Url.IsLocalUrl(returnUrl)) returnUrl = Url.Content("~/");
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
                 return Redirect($"/auth-login-cover.html?error=1&returnUrl={Uri.EscapeDataString(returnUrl)}");
@@ -40,15 +41,17 @@ namespace AutoKnots.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> Register(string email, string password, string? confirmPassword = null, string? fullName = null)
+        public async Task<IActionResult> Register(string email, string password, string? confirmPassword = null, string? fullName = null, string? returnUrl = null)
         {
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl)) returnUrl = null;
+            var returnQuery = string.IsNullOrEmpty(returnUrl) ? string.Empty : $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                return Redirect("/auth-register-cover.html?error=1");
+                return Redirect($"/auth-register-cover.html?error=1{returnQuery}");
             }
             if (password != confirmPassword)
             {
-                return Redirect("/auth-register-cover.html?error=2");
+                return Redirect($"/auth-register-cover.html?error=2{returnQuery}");
             }
             var user = new IdentityUser
             {
@@ -58,9 +61,11 @@ namespace AutoKnots.Controllers
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded)
             {
-                return Redirect("/auth-register-cover.html?error=1");
+                return Redirect($"/auth-register-cover.html?error=1{returnQuery}");
             }
-            return Redirect("/auth-login-cover.html");
+            return string.IsNullOrEmpty(returnUrl)
+                ? Redirect("/auth-login-cover.html")
+                : Redirect($"/auth-login-cover.html?returnUrl={Uri.EscapeDataString(returnUrl)}");
         }
 
         [HttpPost]
