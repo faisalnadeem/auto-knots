@@ -66,7 +66,7 @@ public class MarketplaceServiceTests
 
         var listing = Assert.Single(page.Items);
         Assert.Equal("Toyota", listing.Make);
-        Assert.Equal(ListingStatus.Active, listing.Status);
+        Assert.False(string.IsNullOrWhiteSpace(listing.Slug));
     }
 
     [Fact]
@@ -84,6 +84,80 @@ public class MarketplaceServiceTests
         Assert.True(activated.Success);
         Assert.True(sold.Success);
         Assert.False(reactivated.Success);
+    }
+
+    [Fact]
+    public async Task PublicResults_UseSlugsAndDoNotExposeInternalIdentifiers()
+    {
+        await using var db = CreateDatabase();
+        var item = await AddInventoryAsync(db, "seller-1");
+        var service = new MarketplaceService(db);
+        var created = await service.CreateAsync("seller-1", ValidInput(item.Id, publish: true));
+
+        var page = await service.SearchAsync(new MarketplaceSearch());
+        var details = await service.GetPublicDetailsAsync(created.Value!.Slug);
+
+        Assert.NotEmpty(Assert.Single(page.Items).Slug);
+        Assert.NotNull(details);
+        var publicProperties = typeof(PublicListingDetails).GetProperties().Select(property => property.Name).ToList();
+        Assert.DoesNotContain("Id", publicProperties);
+        Assert.DoesNotContain("InventoryItemId", publicProperties);
+        Assert.DoesNotContain("SellerUserId", publicProperties);
+        Assert.DoesNotContain("CostPrice", publicProperties);
+    }
+
+    [Fact]
+    public async Task PublicSearch_HidesExpiredAndNonActiveListings()
+    {
+        await using var db = CreateDatabase();
+        var active = await AddInventoryAsync(db, "seller-1", "Toyota", "Corolla");
+        var expired = await AddInventoryAsync(db, "seller-1", "Ford", "Focus");
+        var draft = await AddInventoryAsync(db, "seller-1", "BMW", "M3");
+        var service = new MarketplaceService(db);
+        Assert.True((await service.CreateAsync("seller-1", ValidInput(active.Id, publish: true))).Success);
+        var expiredInput = ValidInput(expired.Id, publish: true);
+        expiredInput.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        Assert.True((await service.CreateAsync("seller-1", expiredInput)).Success);
+        Assert.True((await service.CreateAsync("seller-1", ValidInput(draft.Id))).Success);
+
+        var page = await service.SearchAsync(new MarketplaceSearch());
+
+        var visible = Assert.Single(page.Items);
+        Assert.Equal("Toyota", visible.Make);
+    }
+
+    [Fact]
+    public async Task PublicDetails_RespectSellerNameConsent()
+    {
+        await using var db = CreateDatabase();
+        var item = await AddInventoryAsync(db, "seller-1");
+        var input = ValidInput(item.Id, publish: true);
+        input.ShowSellerName = false;
+        var service = new MarketplaceService(db);
+        var created = await service.CreateAsync("seller-1", input);
+
+        var details = await service.GetPublicDetailsAsync(created.Value!.Slug);
+
+        Assert.NotNull(details);
+        Assert.Null(details.SellerName);
+    }
+
+    [Fact]
+    public async Task CreateAsync_GeneratesStableUniqueCleanSlugs()
+    {
+        await using var db = CreateDatabase();
+        var firstItem = await AddInventoryAsync(db, "seller-1", "BMW", "M3");
+        var secondItem = await AddInventoryAsync(db, "seller-1", "BMW", "M3");
+        var service = new MarketplaceService(db);
+        var firstInput = ValidInput(firstItem.Id);
+        var secondInput = ValidInput(secondItem.Id);
+        firstInput.Title = secondInput.Title = "BMW M3 Competition!";
+
+        var first = await service.CreateAsync("seller-1", firstInput);
+        var second = await service.CreateAsync("seller-1", secondInput);
+
+        Assert.Equal("bmw-m3-competition-2022", first.Value!.Slug);
+        Assert.Equal("bmw-m3-competition-2022-2", second.Value!.Slug);
     }
 
     private static ApplicationDbContext CreateDatabase()

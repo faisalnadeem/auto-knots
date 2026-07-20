@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Security;
+using System.Text;
 
 namespace AutoKnots.Controllers;
 
@@ -22,17 +26,50 @@ public class MarketplaceController : Controller
     }
 
     [AllowAnonymous]
+    [HttpGet("/marketplace")]
+    [HttpGet("/marketplace/search")]
+    [HttpGet("/marketplace/filter")]
+    [HttpGet("/cars")]
+    [EnableRateLimiting("public-marketplace")]
+    [OutputCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
     public async Task<IActionResult> Index([FromQuery] MarketplaceSearch filters, CancellationToken cancellationToken = default)
     {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
         ViewBag.Search = filters;
+        ViewBag.PopularMakes = await _marketplace.GetPopularMakesAsync(8, cancellationToken);
+        ViewBag.Featured = (await _marketplace.SearchAsync(new MarketplaceSearch
+        {
+            FeaturedOnly = true,
+            PageSize = 6
+        }, cancellationToken)).Items;
         return View(await _marketplace.SearchAsync(filters, cancellationToken));
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
+    [HttpGet("/cars/{slug}")]
+    [EnableRateLimiting("public-marketplace")]
+    [OutputCache(Duration = 120, VaryByRouteValueNames = new[] { "slug" })]
+    public async Task<IActionResult> Details(string slug, CancellationToken cancellationToken = default)
     {
-        var listing = await _marketplace.GetPublicDetailsAsync(id, cancellationToken);
+        var listing = await _marketplace.GetPublicDetailsAsync(slug, cancellationToken);
         return listing == null ? NotFound() : View(listing);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("/sitemap.xml")]
+    [OutputCache(Duration = 900)]
+    public async Task<IActionResult> Sitemap(CancellationToken cancellationToken = default)
+    {
+        var listings = await _marketplace.GetSitemapListingsAsync(cancellationToken);
+        var xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
+        foreach (var listing in listings)
+        {
+            var url = Url.Action(nameof(Details), "Marketplace", new { slug = listing.Slug }, Request.Scheme)!;
+            xml.Append("<url><loc>").Append(SecurityElement.Escape(url)).Append("</loc><lastmod>")
+                .Append(listing.UpdatedAt.ToString("yyyy-MM-dd")).Append("</lastmod></url>");
+        }
+        xml.Append("</urlset>");
+        return Content(xml.ToString(), "application/xml", Encoding.UTF8);
     }
 
     [Authorize]
@@ -92,6 +129,12 @@ public class MarketplaceController : Controller
             BodyStyle = listing.BodyStyle,
             Condition = listing.Condition,
             Location = listing.Location,
+            Features = listing.Features,
+            VehicleHistory = listing.VehicleHistory,
+            InspectionStatus = listing.InspectionStatus,
+            InspectionSummary = listing.InspectionSummary,
+            ShowSellerName = listing.ShowSellerName,
+            ExpiresAt = listing.ExpiresAt,
             Publish = listing.Status == ListingStatus.Active,
             ImageUrls = string.Join(Environment.NewLine, listing.ImageUrls)
         });

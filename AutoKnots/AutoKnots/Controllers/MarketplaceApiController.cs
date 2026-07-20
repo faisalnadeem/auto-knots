@@ -4,12 +4,15 @@ using AutoKnots.Models.Api;
 using AutoKnots.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AutoKnots.Controllers;
 
 /// <summary>Public vehicle marketplace browsing and seller listing management.</summary>
 [ApiController]
 [Route("api/marketplace/listings")]
+[Route("api/public/marketplace")]
 [Produces("application/json")]
 public class MarketplaceApiController : ControllerBase
 {
@@ -20,20 +23,24 @@ public class MarketplaceApiController : ControllerBase
     /// <summary>Browse active marketplace listings.</summary>
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(MarketplacePage), StatusCodes.Status200OK)]
-    public async Task<ActionResult<MarketplacePage>> Search(
-        [FromQuery] MarketplaceSearch search,
+    [EnableRateLimiting("public-marketplace")]
+    [OutputCache(Duration = 60, VaryByQueryKeys = new[] { "*" })]
+    [ProducesResponseType(typeof(PublicMarketplacePage), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PublicMarketplacePage>> Search(
+        [FromQuery] MarketplaceSearch filters,
         CancellationToken cancellationToken = default) =>
-        Ok(await _marketplace.SearchAsync(search, cancellationToken));
+        Ok(await _marketplace.SearchAsync(filters, cancellationToken));
 
     /// <summary>View an active marketplace listing.</summary>
-    [HttpGet("{id:int}")]
+    [HttpGet("{slug}")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(MarketplaceListingDetails), StatusCodes.Status200OK)]
+    [EnableRateLimiting("public-marketplace")]
+    [OutputCache(Duration = 120, VaryByRouteValueNames = new[] { "slug" })]
+    [ProducesResponseType(typeof(PublicListingDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MarketplaceListingDetails>> Details(int id, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PublicListingDetails>> Details(string slug, CancellationToken cancellationToken = default)
     {
-        var listing = await _marketplace.GetPublicDetailsAsync(id, cancellationToken);
+        var listing = await _marketplace.GetPublicDetailsAsync(slug, cancellationToken);
         return listing == null ? NotFound() : Ok(listing);
     }
 
@@ -66,7 +73,7 @@ public class MarketplaceApiController : ControllerBase
         var result = await _marketplace.CreateAsync(userId, input, cancellationToken);
         if (!result.Success) return BadRequest(new ApiErrorResponse { Error = result.Error! });
 
-        return CreatedAtAction(nameof(Details), new { id = result.Value!.Id }, result.Value);
+        return CreatedAtAction(nameof(Details), new { slug = result.Value!.Slug }, result.Value);
     }
 
     /// <summary>Edit a listing owned by the current seller.</summary>
