@@ -6,5 +6,6 @@ public enum ListingStatus
     Active = 1,
     Paused = 2,
     Sold = 3,
-    Removed = 4
+    Removed = 4,
+    Suspended = 5
 }

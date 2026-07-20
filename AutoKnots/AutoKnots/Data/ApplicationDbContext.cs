@@ -51,11 +51,17 @@ namespace AutoKnots.Data
             modelBuilder.Entity<VehicleListing>(e =>
             {
                 e.Property(x => x.Price).HasPrecision(18, 2);
+                e.HasIndex(x => x.Slug).IsUnique();
                 e.HasIndex(x => x.InventoryItemId).IsUnique();
                 e.HasIndex(x => new { x.Status, x.PublishedAt });
+                e.HasIndex(x => new { x.Status, x.ExpiresAt });
                 e.HasIndex(x => new { x.Status, x.Price });
                 e.HasIndex(x => new { x.Status, x.Year });
                 e.HasIndex(x => new { x.Status, x.Mileage });
+                e.HasIndex(x => new { x.Status, x.FuelType });
+                e.HasIndex(x => new { x.Status, x.Transmission });
+                e.HasIndex(x => new { x.Status, x.BodyStyle });
+                e.HasIndex(x => new { x.Status, x.Condition });
 
                 e.HasOne(x => x.InventoryItem)
                     .WithOne(i => i.Listing)
